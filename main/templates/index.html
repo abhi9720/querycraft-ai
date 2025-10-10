@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+  <title>QueryGPT</title>
+</head>
+<body>
+  <h1>QueryGPT</h1>
+  <p>Enter a natural language query to generate a SQL query.</p>
+  <form id="query-form">
+    <input type="text" id="prompt" name="prompt" required>
+    <button type="submit">Generate SQL</button>
+  </form>
+  <h2>Generated SQL:</h2>
+  <pre><code id="sql-result"></code></pre>
+
+  <script>
+    document.getElementById('query-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const prompt = document.getElementById('prompt').value;
+      const response = await fetch('/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt }),
+      });
+      const data = await response.json();
+      document.getElementById('sql-result').textContent = data.sql;
+    });
+  </script>
+</body>
+</html>

@@ -1,6 +1,5 @@
-# Dev environment
-pip
-autopep8
-
-# App
 flask
+google-generativeai
+redis
+Flask-Caching
+python-dotenv
