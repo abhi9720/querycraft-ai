@@ -1,5 +1,3 @@
 flask
 google-generativeai
-redis
-Flask-Caching
 python-dotenv

@@ -1,15 +1,6 @@
-import os
-import google.generativeai as genai
-from dotenv import load_dotenv
+from agents.base import BaseAgent
 
-load_dotenv()
-
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-
-class IntentAgent:
-    def __init__(self):
-        self.model = genai.GenerativeModel('gemini-pro')
-
+class IntentAgent(BaseAgent):
     def run(self, prompt):
         full_prompt = f"""Determine the intent of the following prompt. The two possible intents are: GENERATE_SQL and EXPLAIN_SQL.
 

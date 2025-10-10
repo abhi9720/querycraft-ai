@@ -1,21 +1,12 @@
-import os
-import google.generativeai as genai
-from dotenv import load_dotenv
+from agents.base import BaseAgent
 
-load_dotenv()
-
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-
-class ColumnPruneAgent:
-    def __init__(self):
-        self.model = genai.GenerativeModel('gemini-pro')
-
+class ColumnPruneAgent(BaseAgent):
     def run(self, prompt, schema):
-        full_prompt = f"""Given the following SQL schema, determine which columns are relevant to the user's prompt and return a pruned schema.
+        full_prompt = f"""Given the following SQL schema, determine which tables are relevant to the user's prompt and remove any columns that are not relevant to the user's prompt. Retain all primary and foreign key columns.
 
 Schema: {schema}
 
 Prompt: {prompt}
 
-Pruned Schema:"""
+Relevant Tables:"""
         return self.model.generate_content(full_prompt)

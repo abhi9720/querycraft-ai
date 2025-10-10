@@ -1,19 +1,12 @@
-import os
-import google.generativeai as genai
-from dotenv import load_dotenv
+from agents.base import BaseAgent
 
-load_dotenv()
+class QueryExplanationAgent(BaseAgent):
+    def run(self, prompt, query):
+        full_prompt = f"""Given the following SQL query and the user's prompt, provide a natural language explanation of the query.
 
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+Query: {query}
 
-class QueryExplanationAgent:
-    def __init__(self):
-        self.model = genai.GenerativeModel('gemini-pro')
-
-    def run(self, prompt):
-        full_prompt = f"""Explain the following SQL query in plain English.
-
-Query: {prompt}
+Prompt: {prompt}
 
 Explanation:"""
         return self.model.generate_content(full_prompt)

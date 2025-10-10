@@ -2,22 +2,27 @@
 <html>
 <head>
   <title>QueryGPT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1>QueryGPT</h1>
-  <p>Enter a natural language query to generate a SQL query.</p>
-  <form id="query-form">
-    <input type="text" id="prompt" name="prompt" required>
-    <button type="submit">Generate SQL</button>
-  </form>
-  <h2>Generated SQL:</h2>
-  <pre><code id="sql-result"></code></pre>
+<body class="bg-gray-100 text-gray-800">
+  <div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold text-center mb-4">QueryGPT</h1>
+    <p class="text-center mb-8">Enter a natural language query to generate a SQL query.</p>
+    <form id="query-form" class="text-center">
+      <input type="text" id="prompt" name="prompt" class="border rounded-l-lg p-2 w-1/2" required>
+      <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-r-lg">Generate SQL</button>_
+    </form>
+    <div class="mt-8">
+      <h2 class="text-2xl font-bold">Generated SQL:</h2>
+      <pre class="bg-gray-200 p-4 rounded-lg"><code id="sql-result"></code></pre>
+    </div>
+  </div>
 
   <script>
     document.getElementById('query-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const prompt = document.getElementById('prompt').value;
-      const response = await fetch('/query', {
+      const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

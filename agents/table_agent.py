@@ -1,15 +1,6 @@
-import os
-import google.generativeai as genai
-from dotenv import load_dotenv
+from agents.base import BaseAgent
 
-load_dotenv()
-
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-
-class TableAgent:
-    def __init__(self):
-        self.model = genai.GenerativeModel('gemini-pro')
-
+class TableAgent(BaseAgent):
     def run(self, prompt, schema):
         full_prompt = f"""Given the following SQL schema, determine which tables are relevant to the user's prompt.
 

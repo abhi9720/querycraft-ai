@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SQL Query Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>SQL Query Generator</h1>
+        <form id="prompt-form">
+            <textarea id="prompt-input" placeholder="Enter your prompt..."></textarea>
+            <button type="submit">Generate</button>
+        </form>
+        <div id="result">
+            <h2>Generated SQL</h2>
+            <pre id="sql-output"></pre>
+            <h2>Explanation</h2>
+            <pre id="explanation-output"></pre>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
