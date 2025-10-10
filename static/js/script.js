@@ -1,53 +1,68 @@
-document.getElementById('prompt-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+
+document.getElementById('generate-btn').addEventListener('click', async () => {
     const promptInput = document.getElementById('prompt-input');
     const prompt = promptInput.value;
+
+    if (!prompt) {
+        alert('Please enter a prompt.');
+        return;
+    }
+
     const loader = document.getElementById('loader');
     const resultDiv = document.getElementById('result');
     const errorDiv = document.getElementById('error');
+    const sqlOutput = document.getElementById('sql-output');
+    const explanationOutput = document.getElementById('explanation-output');
 
-    // Show loader and hide previous results/errors
-    loader.style.display = 'block';
+    // Reset UI
     resultDiv.style.display = 'none';
     errorDiv.style.display = 'none';
+    loader.style.display = 'block';
 
     try {
-        const response = await fetch('/api/generate', {
+        // Step 1: Suggest tables
+        const tablesResponse = await fetch('/api/suggest_tables', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ prompt })
+            body: JSON.stringify({ prompt: prompt })
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (!tablesResponse.ok) {
+            throw new Error('Failed to suggest tables.');
         }
 
-        const data = await response.json();
+        const tablesData = await tablesResponse.json();
+        const tables = tablesData.tables;
 
-        if (data.sql && data.explanation) {
-            // Display SQL
-            const sqlOutput = document.getElementById('sql-output');
-            sqlOutput.textContent = data.sql;
-            hljs.highlightElement(sqlOutput);
+        // Step 2: Generate SQL
+        const sqlResponse = await fetch('/api/generate_sql', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ prompt: prompt, tables: tables })
+        });
 
-            // Display explanation
-            const explanationOutput = document.getElementById('explanation-output');
-            explanationOutput.innerHTML = marked.parse(data.explanation);
-
-            // Show results
-            resultDiv.style.display = 'grid';
-        } else {
-            throw new Error('Invalid response from server.');
+        if (!sqlResponse.ok) {
+            throw new Error('Failed to generate SQL.');
         }
 
+        const sqlData = await sqlResponse.json();
+
+        // Display results
+        sqlOutput.textContent = sqlData.sql;
+        explanationOutput.innerHTML = marked.parse(sqlData.explanation);
+
+        // Highlight the code
+        hljs.highlightAll();
+
+        resultDiv.style.display = 'grid';
     } catch (error) {
-        console.error('Error:', error);
-        errorDiv.textContent = 'An error occurred. Please try again.';
+        errorDiv.textContent = error.message;
         errorDiv.style.display = 'block';
     } finally {
-        // Hide loader
         loader.style.display = 'none';
     }
 });

@@ -9,4 +9,5 @@ Query: {query}
 Prompt: {prompt}
 
 Explanation:"""
-        return self.model.generate_content(full_prompt)
+        response = self.model.generate_content(full_prompt)
+        return response.parts[0].text.strip()

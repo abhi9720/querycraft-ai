@@ -1,1 +1,250 @@
-/* No custom CSS needed. All styles are handled by Tailwind CSS in the HTML. */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #1a1a2e;
+    color: #e0e0e0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    width: 800px;
+    height: 90vh;
+    background-color: #161625;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid #2a2a4e;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo .fa-bolt {
+    color: #f6d365;
+    font-size: 24px;
+}
+
+.logo h1 {
+    font-size: 22px;
+    margin: 0 10px;
+    font-weight: 600;
+}
+
+.logo span {
+    background-color: #3a3a5e;
+    color: #a0a0e0;
+    padding: 3px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 20px;
+    color: #a0a0e0;
+}
+
+.workspace-btn {
+    background-color: #2a2a4e;
+    border: 1px solid #4a4a6e;
+    color: #e0e0e0;
+    padding: 8px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.pro-tip {
+    background-color: #202d36;
+    color: #b0c0c8;
+    padding: 15px 25px;
+    margin: 20px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+}
+
+.chat-history {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.message {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    max-width: 80%;
+}
+
+.message.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.message .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.message .content {
+    background-color: #2a2a4e;
+    padding: 15px;
+    border-radius: 15px;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.message.user .content {
+    background-color: #f6d365;
+    color: #1a1a2e;
+}
+
+.input-container {
+    padding: 20px;
+    border-top: 1px solid #2a2a4e;
+    display: flex;
+    background-color: #161625;
+}
+
+.input-container input {
+    flex-grow: 1;
+    background-color: #2a2a4e;
+    border: 1px solid #4a4a6e;
+    border-radius: 10px;
+    padding: 15px;
+    color: #e0e0e0;
+    font-size: 15px;
+}
+
+.input-container button {
+    background: none;
+    border: none;
+    margin-left: 15px;
+    cursor: pointer;
+}
+
+.input-container button img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.table-selection-container {
+    background-color: #2a2a4e;
+    border-radius: 12px;
+    margin: 0 20px 20px;
+    padding: 20px;
+    border: 1px solid #4a4a6e;
+}
+
+.table-selection-container h4 {
+    margin-top: 0;
+    font-weight: 600;
+    color: #a0a0e0;
+}
+
+.table-search {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.table-search .fa-search {
+    position: absolute;
+    top: 13px;
+    left: 15px;
+    color: #a0a0e0;
+}
+
+.table-search input {
+    width: 100%;
+    background-color: #161625;
+    border: 1px solid #4a4a6e;
+    border-radius: 8px;
+    padding: 10px 15px 10px 40px;
+    color: #e0e0e0;
+}
+
+.table-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.table-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #4a4a6e;
+}
+
+.table-list li:last-child {
+    border-bottom: none;
+}
+
+.table-list .fa-times {
+    color: #e06c75;
+    cursor: pointer;
+}
+
+.table-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+}
+
+#confirm-tables-btn {
+    background-color: #0d0d1a;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#confirm-tables-btn .fa-check-circle {
+    color: #50fa7b;
+}
+
+pre {
+    background-color: #282c34;
+    color: #abb2bf;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+code {
+    font-family: 'Fira Code', 'Courier New', monospace;
+}
