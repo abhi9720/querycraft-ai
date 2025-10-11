@@ -27,38 +27,13 @@ By integrating this agent, an organization can empower its entire team to explor
 *   **Accurate SQL Generation:** Generates a precise, executable SQL query tailored to your request.
 *   **Plain English Explanations:** Every generated query is accompanied by a step-by-step explanation, making it a great learning tool for those new to SQL.
 *   **Simple Web Interface:** A clean, user-friendly chat interface for easy interaction.
-*   **Extensible Agent-Based Architecture:** The modular design allows developers to easily extend the agent's capabilities or adapt it to different SQL dialects.
+*   **Extensible Agent-Based Architecture:** The modular design allows developers to easily extend the agent\'s capabilities or adapt it to different SQL dialects.
 
 ## 5. How It Works: System Architecture
 
 The application uses a multi-agent system where each agent has a specialized role. The process is orchestrated by a backend Flask API and presented to the user through a simple frontend.
 
-```mermaid
-graph TD
-
-    subgraph UI["User Interface"]
-        A[User] -->|Asks question via Chat UI| B[Frontend];
-    end
-
-    subgraph Backend["Backend API (Flask)"]
-        B -->|Sends request| C{Orchestrator Agent};
-    end
-
-    subgraph Agents["AI Agent System"]
-        C -->|1️⃣ Determine user goal| D[Intent Agent];
-        C -->|2️⃣ Identify required tables| E[Table Identification Agent];
-        C -->|3️⃣ Select relevant columns| F[Column Prune Agent];
-        C -->|4️⃣ Construct SQL query| G[SQL Agent];
-        C -->|5️⃣ Explain SQL query| H[Query Explanation Agent];
-    end
-
-    subgraph Response["Final Response"]
-        G -->|Generated SQL| I[(Response)];
-        H -->|Query Explanation| I;
-    end
-
-    I -->|SQL + Explanation| B;
-```
+![QueryCraftAI Architecture](static/images/architecture.png)
 
 ## 6. Use Cases
 
@@ -93,7 +68,7 @@ This project is just the beginning. Our future plans include:
 
 ## 9. Contributing
 
-This is an open-source project, and we welcome contributions from the community! Whether it's a bug fix, a new feature, or improved documentation, your help is valued. Please see our `CONTRIBUTING.md` file for guidelines.
+This is an open-source project, and we welcome contributions from the community! Whether it\'s a bug fix, a new feature, or improved documentation, your help is valued. Please see our `CONTRIBUTING.md` file for guidelines.
 
 ## 10. License
 
