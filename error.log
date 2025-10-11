@@ -1085,3 +1085,5 @@ AttributeError: 'str' object has no attribute 'keys'
 2025-10-11 17:47:44,873 - INFO - 127.0.0.1 - - [11/Oct/2025 17:47:44] "GET /api/tables HTTP/1.1" 200 -
 2025-10-11 17:47:59,860 - INFO - 127.0.0.1 - - [11/Oct/2025 17:47:59] "POST /api/generate HTTP/1.1" 200 -
 2025-10-11 17:48:24,332 - INFO - 127.0.0.1 - - [11/Oct/2025 17:48:24] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 18:10:25,919 - WARNING -  * Debugger is active!
+2025-10-11 18:10:25,927 - INFO -  * Debugger PIN: 313-832-897
