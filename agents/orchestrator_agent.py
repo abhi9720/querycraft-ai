@@ -61,6 +61,12 @@ class OrchestratorAgent(BaseAgent):
             sql_agent = SQLAgent()
             sql_query = sql_agent.run(prompt, pruned_schema_dict, tables)
 
+            # If the SQL agent returns an error, just return the explanation as a direct answer.
+            if sql_query.strip().startswith("Error:"):
+                explanation_agent = QueryExplanationAgent()
+                explanation = explanation_agent.run(prompt=prompt, query=sql_query)
+                return {"type": "direct_answer", "response": explanation}
+
             explanation_agent = QueryExplanationAgent()
             explanation = explanation_agent.run(prompt=prompt, query=sql_query)
 

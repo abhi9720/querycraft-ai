@@ -7,9 +7,10 @@ class SQLAgent(BaseAgent):
 
 **Instructions:**
 1.  **You must only use the following tables:** {table_list}.
-2.  Only use the columns present in the provided schema for those tables.
-3.  Do not invent new column names that are not in the schema.
-4.  Ensure the query is syntactically correct for MySQL.
+2.  Your query **MUST** only use columns that are explicitly listed in the schema for the given tables.
+3.  **DO NOT** invent column names.
+4.  If the user's prompt cannot be answered with the given schema (e.g., if it refers to a column that does not exist), you MUST return only a descriptive error message starting with "Error:". For example: `Error: The prompt cannot be answered with the available schema.`
+5.  Ensure the query is syntactically correct for MySQL.
 
 Schema:
 {schema}

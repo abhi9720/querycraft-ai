@@ -1010,3 +1010,78 @@ AttributeError: 'str' object has no attribute 'keys'
 2025-10-11 16:48:22,563 - INFO - 127.0.0.1 - - [11/Oct/2025 16:48:22] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
 2025-10-11 16:48:22,569 - INFO - 127.0.0.1 - - [11/Oct/2025 16:48:22] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
 2025-10-11 16:48:22,737 - INFO - 127.0.0.1 - - [11/Oct/2025 16:48:22] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 17:24:10,458 - WARNING -  * Debugger is active!
+2025-10-11 17:24:10,464 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:24:21,701 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9090
+ * Running on http://10.88.0.3:9090
+2025-10-11 17:24:21,702 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-11 17:24:21,703 - INFO -  * Restarting with stat
+2025-10-11 17:24:23,114 - WARNING -  * Debugger is active!
+2025-10-11 17:24:23,131 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:24:25,006 - INFO - 127.0.0.1 - - [11/Oct/2025 17:24:25] "GET / HTTP/1.1" 200 -
+2025-10-11 17:24:25,200 - INFO - 127.0.0.1 - - [11/Oct/2025 17:24:25] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-11 17:24:25,373 - INFO - 127.0.0.1 - - [11/Oct/2025 17:24:25] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-10-11 17:24:25,556 - INFO - 127.0.0.1 - - [11/Oct/2025 17:24:25] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 17:24:27,572 - INFO - 127.0.0.1 - - [11/Oct/2025 17:24:27] "GET /?embedded=0&monospaceUid=718773 HTTP/1.1" 200 -
+2025-10-11 17:24:27,779 - INFO - 127.0.0.1 - - [11/Oct/2025 17:24:27] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 17:24:28,017 - INFO - 127.0.0.1 - - [11/Oct/2025 17:24:28] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 17:24:28,218 - INFO - 127.0.0.1 - - [11/Oct/2025 17:24:28] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 17:24:34,930 - INFO - 127.0.0.1 - - [11/Oct/2025 17:24:34] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 17:24:49,027 - INFO - 127.0.0.1 - - [11/Oct/2025 17:24:49] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 17:27:23,896 - INFO - 127.0.0.1 - - [11/Oct/2025 17:27:23] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 17:28:00,718 - INFO - 127.0.0.1 - - [11/Oct/2025 17:28:00] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 17:28:07,924 - INFO - 127.0.0.1 - - [11/Oct/2025 17:28:07] "GET /api/table/orders HTTP/1.1" 200 -
+2025-10-11 17:33:47,243 - INFO -  * Detected change in '/home/user/querygpt/agents/sql_agent.py', reloading
+2025-10-11 17:33:47,532 - INFO -  * Detected change in '/home/user/querygpt/agents/sql_agent.py', reloading
+2025-10-11 17:33:47,796 - INFO -  * Restarting with stat
+2025-10-11 17:33:49,026 - WARNING -  * Debugger is active!
+2025-10-11 17:33:49,031 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:33:50,409 - WARNING -  * Debugger is active!
+2025-10-11 17:33:50,420 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:34:10,302 - INFO - 127.0.0.1 - - [11/Oct/2025 17:34:10] "GET /?embedded=0&monospaceUid=718773 HTTP/1.1" 200 -
+2025-10-11 17:34:10,489 - INFO - 127.0.0.1 - - [11/Oct/2025 17:34:10] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 17:34:10,649 - INFO - 127.0.0.1 - - [11/Oct/2025 17:34:10] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 17:34:10,810 - INFO - 127.0.0.1 - - [11/Oct/2025 17:34:10] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 17:34:17,787 - INFO - 127.0.0.1 - - [11/Oct/2025 17:34:17] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 17:34:41,929 - INFO - 127.0.0.1 - - [11/Oct/2025 17:34:41] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 17:38:30,758 - INFO -  * Detected change in '/home/user/querygpt/agents/sql_agent.py', reloading
+2025-10-11 17:38:31,007 - INFO -  * Restarting with stat
+2025-10-11 17:38:31,183 - INFO -  * Detected change in '/home/user/querygpt/agents/sql_agent.py', reloading
+2025-10-11 17:38:32,401 - WARNING -  * Debugger is active!
+2025-10-11 17:38:32,406 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:38:34,379 - WARNING -  * Debugger is active!
+2025-10-11 17:38:34,388 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:38:53,665 - INFO -  * Detected change in '/home/user/querygpt/agents/query_explanation_agent.py', reloading
+2025-10-11 17:38:53,690 - INFO -  * Detected change in '/home/user/querygpt/agents/query_explanation_agent.py', reloading
+2025-10-11 17:38:54,071 - INFO -  * Restarting with stat
+2025-10-11 17:38:55,838 - WARNING -  * Debugger is active!
+2025-10-11 17:38:55,851 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:38:56,366 - WARNING -  * Debugger is active!
+2025-10-11 17:38:56,373 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:40:54,125 - INFO -  * Detected change in '/home/user/querygpt/api/routes.py', reloading
+2025-10-11 17:40:54,511 - INFO -  * Detected change in '/home/user/querygpt/api/routes.py', reloading
+2025-10-11 17:40:54,946 - INFO -  * Restarting with stat
+2025-10-11 17:40:56,506 - WARNING -  * Debugger is active!
+2025-10-11 17:40:56,524 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:40:56,637 - WARNING -  * Debugger is active!
+2025-10-11 17:40:56,642 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:41:16,024 - INFO - 127.0.0.1 - - [11/Oct/2025 17:41:16] "GET /?embedded=0&monospaceUid=718773 HTTP/1.1" 200 -
+2025-10-11 17:41:16,217 - INFO - 127.0.0.1 - - [11/Oct/2025 17:41:16] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 17:41:16,375 - INFO - 127.0.0.1 - - [11/Oct/2025 17:41:16] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 17:41:16,542 - INFO - 127.0.0.1 - - [11/Oct/2025 17:41:16] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 17:41:26,256 - INFO - 127.0.0.1 - - [11/Oct/2025 17:41:26] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 17:41:45,162 - INFO - 127.0.0.1 - - [11/Oct/2025 17:41:45] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 17:46:34,852 - INFO -  * Detected change in '/home/user/querygpt/agents/orchestrator_agent.py', reloading
+2025-10-11 17:46:38,055 - WARNING -  * Debugger is active!
+2025-10-11 17:46:38,060 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:47:06,521 - INFO -  * Detected change in '/home/user/querygpt/api/routes.py', reloading
+2025-10-11 17:47:08,308 - WARNING -  * Debugger is active!
+2025-10-11 17:47:08,314 - INFO -  * Debugger PIN: 313-832-897
+2025-10-11 17:47:44,342 - INFO - 127.0.0.1 - - [11/Oct/2025 17:47:44] "GET /?embedded=0&monospaceUid=718773 HTTP/1.1" 200 -
+2025-10-11 17:47:44,547 - INFO - 127.0.0.1 - - [11/Oct/2025 17:47:44] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 17:47:44,717 - INFO - 127.0.0.1 - - [11/Oct/2025 17:47:44] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 17:47:44,873 - INFO - 127.0.0.1 - - [11/Oct/2025 17:47:44] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 17:47:59,860 - INFO - 127.0.0.1 - - [11/Oct/2025 17:47:59] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 17:48:24,332 - INFO - 127.0.0.1 - - [11/Oct/2025 17:48:24] "POST /api/generate HTTP/1.1" 200 -
