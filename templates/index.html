@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,25 +10,40 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <div class="logo">
-                <i class="fas fa-bolt"></i>
-                <h1>QueryGPT</h1>
-                <span>Beta</span>
+        <div class="sidebar" id="tables-sidebar">
+            <div id="table-list-container">
+                <h3>Tables</h3>
+                <ul id="table-list">
+                    {% for table in tables %}
+                    <li>{{ table }}</li>
+                    {% endfor %}
+                </ul>
             </div>
-            <div class="actions">
-                <i class="fas fa-question-circle"></i>
-                <i class="fas fa-times"></i>
-            </div>
-        </header>
-
-        <div class="chat-history" id="chat-history">
-            <!-- Chat messages will be appended here -->
         </div>
+        <div class="sidebar" id="history-sidebar">
+            <button id="new-chat-btn">New Chat</button>
+            <div id="chat-history-list">
+                <h3>History</h3>
+                <ul id="history-list"></ul>
+            </div>
+        </div>
+        <div class="main-content">
+            <header>
+                <div class="logo">
+                    <i class="fas fa-bolt"></i>
+                    <h1>QueryGPT</h1>
+                    <span>Beta</span>
+                </div>
+            </header>
 
-        <div class="input-container">
-            <input type="text" id="user-input" placeholder="Ask me a question, and I can help you by generating a first-draft query.">
-            <button id="send-btn"><img src="https://img.icons8.com/color/48/000000/user-male-circle.png" alt="User"></button>
+            <div class="chat-history" id="chat-history">
+                <!-- Chat messages will be appended here -->
+            </div>
+
+            <div class="input-container">
+                <input type="text" id="user-input" placeholder="Ask me a question, and I can help you by generating a first-draft query.">
+                <button id="send-btn"><img src="https://img.icons8.com/color/48/000000/user-male-circle.png" alt="User"></button>
+            </div>
         </div>
     </div>
 

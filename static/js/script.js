@@ -1,9 +1,57 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     const chatHistory = document.getElementById('chat-history');
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
+    const newChatBtn = document.getElementById('new-chat-btn');
+    const historyList = document.getElementById('history-list');
 
     let conversationState = { prompt: '' };
+    let currentChatId = null;
+
+    // Load chat history from local storage
+    function loadChatHistory() {
+        const chats = JSON.parse(localStorage.getItem('chats')) || {};
+        historyList.innerHTML = '';
+        for (const chatId in chats) {
+            const chat = chats[chatId];
+            const listItem = document.createElement('li');
+            listItem.textContent = chat.title;
+            listItem.dataset.chatId = chatId;
+            listItem.addEventListener('click', () => {
+                loadChat(chatId);
+            });
+            historyList.appendChild(listItem);
+        }
+    }
+
+    // Load a specific chat
+    function loadChat(chatId) {
+        const chats = JSON.parse(localStorage.getItem('chats')) || {};
+        const chat = chats[chatId];
+        if (chat) {
+            currentChatId = chatId;
+            chatHistory.innerHTML = '';
+            chat.messages.forEach(message => {
+                addMessage(message.sender, message.message, message.isHtml);
+            });
+        }
+    }
+
+    // Save a message to the current chat
+    function saveMessage(sender, message, isHtml = false) {
+        const chats = JSON.parse(localStorage.getItem('chats')) || {};
+        if (!currentChatId) {
+            currentChatId = `chat_${Date.now()}`;
+            chats[currentChatId] = { title: 'New Chat', messages: [] };
+        }
+        chats[currentChatId].messages.push({ sender, message, isHtml });
+        if (chats[currentChatId].messages.length === 1) {
+            chats[currentChatId].title = message;
+        }
+        localStorage.setItem('chats', JSON.stringify(chats));
+        loadChatHistory();
+    }
 
     function addMessage(sender, message, isHtml = false) {
         const messageElement = document.createElement('div');
@@ -31,6 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tablesList = `<ul>${tables.map(t => `<li>${t}</li>`).join('')}</ul>`;
         const confirmationHtml = `<div>To answer that, I believe I need to use the following tables. Is this correct?</div>${tablesList}`;
         addMessage('bot', confirmationHtml, true);
+        saveMessage('bot', confirmationHtml, true);
 
         const buttonContainer = document.createElement('div');
         buttonContainer.classList.add('confirmation-buttons');
@@ -53,10 +102,13 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.confirmation-buttons').remove(); // Remove buttons after click
         if (isCorrect) {
             addMessage('user', 'Yes, that is correct.');
+            saveMessage('user', 'Yes, that is correct.');
             await sendMessage(conversationState.prompt, tables);
         } else {
             addMessage('user', 'No, that is not correct.');
+            saveMessage('user', 'No, that is not correct.');
             addMessage('bot', 'My apologies. Please try rephrasing your question or provide more specific details about the tables I should use.');
+            saveMessage('bot', 'My apologies. Please try rephrasing your question or provide more specific details about the tables I should use.');
             conversationState = {}; // Reset state
         }
     }
@@ -82,22 +134,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (data.sql) {
                     const formattedSql = `<pre><code>${data.sql}</code></pre>`;
                     addMessage('bot', formattedSql, true);
+                    saveMessage('bot', formattedSql, true);
                     if (data.explanation) {
                         addMessage('bot', data.explanation, true);
+                        saveMessage('bot', data.explanation, true);
                     }
                     conversationState = {}; // Reset state after completion
                 }
             } else {
                 const errorMessage = data.error || 'Sorry, something went wrong.';
                 addMessage('bot', errorMessage, true);
+                saveMessage('bot', errorMessage, true);
                 if(data.description) {
                     addMessage('bot', `<pre>${data.description}</pre>`, true);
+                    saveMessage('bot', `<pre>${data.description}</pre>`, true);
                 }
                 conversationState = {}; // Reset state on error
             }
         } catch (error) {
             console.error('Error:', error);
             addMessage('bot', 'Sorry, something went wrong. Please try again.');
+            saveMessage('bot', 'Sorry, something went wrong. Please try again.');
             conversationState = {}; // Reset state on error
         }
     }
@@ -107,11 +164,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (prompt === '') return;
 
         addMessage('user', prompt);
+        saveMessage('user', prompt);
         userInput.value = '';
         
         conversationState.prompt = prompt;
         await sendMessage(prompt);
     }
+
+    // New Chat button event listener
+    newChatBtn.addEventListener('click', () => {
+        currentChatId = null;
+        chatHistory.innerHTML = '';
+        addMessage('bot', 'Hey! I\'m your personal SQL agent. Ask me a question about your data, and I\'ll help you build the right query to answer it.');
+    });
 
     // Initial bot message
     addMessage('bot', 'Hey! I\'m your personal SQL agent. Ask me a question about your data, and I\'ll help you build the right query to answer it.');
@@ -124,4 +189,6 @@ document.addEventListener('DOMContentLoaded', () => {
             handleUserInput();
         }
     });
+
+    loadChatHistory();
 });

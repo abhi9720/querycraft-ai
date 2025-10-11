@@ -2,6 +2,7 @@
 import traceback
 import logging
 from flask import jsonify, request
+import json
 
 from agents.query_explanation_agent import QueryExplanationAgent
 from agents.sql_agent import SQLAgent
@@ -31,8 +32,16 @@ def generate():
         if not prompt:
             return jsonify({"error": "Prompt is required"}), 400
 
-        with open("schema.sql") as f:
-            schema = f.read()
+        with open("schema.json") as f:
+            schema_json = json.load(f)
+
+        schema = ""
+        for table_name, table_data in schema_json.items():
+            schema += f"Table {table_name}:\n"
+            for column in table_data['columns']:
+                schema += f"  {column['name']}: {column['type']}\n"
+            schema += "\n"
+
 
         if not tables:
             # If no tables are provided, it's the first step: identify tables.
