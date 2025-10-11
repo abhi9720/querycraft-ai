@@ -1,8 +1,8 @@
-# Product Document: Natural Language SQL Query Agent
+# Product Document: QueryCraftAI
 
 ## 1. Introduction: Your Personal Data Analyst
 
-The SQL Query Agent is an open-source project that bridges the gap between complex databases and natural human language. It provides an intuitive chat interface that allows anyone—from developers and data analysts to business stakeholders—to ask questions about their data in plain English and receive ready-to-use SQL queries and clear, understandable explanations in return.
+QueryCraftAI is an open-source project that bridges the gap between complex databases and natural human language. It provides an intuitive chat interface that allows anyone—from developers and data analysts to business stakeholders—to ask questions about their data in plain English and receive ready-to-use SQL queries and clear, understandable explanations in return.
 
 **Our vision is to democratize data access, making it as simple as having a conversation.**
 
@@ -16,7 +16,7 @@ Databases are the heart of modern applications, yet accessing the information th
 
 ## 3. The Solution: A Conversational AI for Databases
 
-The SQL Query Agent is an intelligent system that understands user intent and the underlying database schema. It acts as a translator, converting natural language questions into precise SQL code.
+QueryCraftAI is an intelligent system that understands user intent and the underlying database schema. It acts as a translator, converting natural language questions into precise SQL code.
 
 By integrating this agent, an organization can empower its entire team to explore data, gain insights, and make data-driven decisions independently.
 
@@ -36,17 +36,14 @@ The application uses a multi-agent system where each agent has a specialized rol
 ```mermaid
 graph TD
 
-    %% User Interface Layer
     subgraph UI["User Interface"]
         A[User] -->|Asks question via Chat UI| B[Frontend];
     end
 
-    %% Backend Layer
     subgraph Backend["Backend API (Flask)"]
         B -->|Sends request| C{Orchestrator Agent};
     end
 
-    %% AI Agent System
     subgraph Agents["AI Agent System"]
         C -->|1️⃣ Determine user goal| D[Intent Agent];
         C -->|2️⃣ Identify required tables| E[Table Identification Agent];
@@ -55,13 +52,11 @@ graph TD
         C -->|5️⃣ Explain SQL query| H[Query Explanation Agent];
     end
 
-    %% Final Response
     subgraph Response["Final Response"]
         G -->|Generated SQL| I[(Response)];
         H -->|Query Explanation| I;
     end
 
-    %% Return to Frontend
     I -->|SQL + Explanation| B;
 ```
 
@@ -102,4 +97,4 @@ This is an open-source project, and we welcome contributions from the community!
 
 ## 10. License
 
-The SQL Query Agent is licensed under the MIT License.
+QueryCraftAI is licensed under the MIT License.
