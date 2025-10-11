@@ -284,3 +284,9 @@ IndexError: list index out of range
 2025-10-11 06:39:31,252 - INFO - 127.0.0.1 - - [11/Oct/2025 06:39:31] "GET /api/tables HTTP/1.1" 200 -
 2025-10-11 06:39:34,077 - INFO - 127.0.0.1 - - [11/Oct/2025 06:39:34] "POST /api/generate HTTP/1.1" 200 -
 2025-10-11 06:39:53,653 - INFO - 127.0.0.1 - - [11/Oct/2025 06:39:53] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 06:49:09,817 - INFO - 127.0.0.1 - - [11/Oct/2025 06:49:09] "GET /?embedded=0&monospaceUid=718773 HTTP/1.1" 200 -
+2025-10-11 06:49:10,006 - INFO - 127.0.0.1 - - [11/Oct/2025 06:49:10] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 06:49:10,156 - INFO - 127.0.0.1 - - [11/Oct/2025 06:49:10] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 06:49:10,324 - INFO - 127.0.0.1 - - [11/Oct/2025 06:49:10] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 06:49:46,407 - INFO - 127.0.0.1 - - [11/Oct/2025 06:49:46] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 06:50:00,551 - INFO - 127.0.0.1 - - [11/Oct/2025 06:50:00] "POST /api/generate HTTP/1.1" 200 -

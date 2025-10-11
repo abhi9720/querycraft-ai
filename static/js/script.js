@@ -58,25 +58,23 @@ document.addEventListener('DOMContentLoaded', () => {
             currentChatId = chatId;
             chatHistory.innerHTML = '';
             chat.messages.forEach(message => {
-                // This is a simplified representation. In a real app, you might need to re-render interactive elements.
-                addMessage(message.sender, message.message, message.isHtml);
+                addMessage(message.sender, message.message, message.isHtml, message.isSql);
             });
         }
     }
 
     // Save a message to the current chat
-    function saveMessage(sender, message, isHtml = false) {
+    function saveMessage(sender, message, isHtml = false, isSql = false) {
         const chats = JSON.parse(localStorage.getItem('chats')) || {};
         if (!currentChatId) {
             currentChatId = `chat_${Date.now()}`;
             chats[currentChatId] = { title: 'New Chat', messages: [] };
         }
 
-        // Don't save the interactive confirmation message itself, just the final state.
         const isConfirmation = typeof message === 'object' && message.confirmation;
 
         if (!isConfirmation) {
-            chats[currentChatId].messages.push({ sender, message, isHtml });
+            chats[currentChatId].messages.push({ sender, message, isHtml, isSql });
         }
 
         if (chats[currentChatId].messages.length === 1 && !isConfirmation) {
@@ -86,7 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loadChatHistory();
     }
 
-    function addMessage(sender, message, isHtml = false) {
+    function addMessage(sender, message, isHtml = false, isSql = false) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', sender);
 
@@ -96,8 +94,28 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const content = document.createElement('div');
         content.classList.add('content');
-        if (isHtml) {
-            content.innerHTML = message;
+
+        if (isSql) {
+            const pre = document.createElement('pre');
+            const code = document.createElement('code');
+            code.textContent = message;
+            pre.appendChild(code);
+            content.appendChild(pre);
+
+            const copyBtn = document.createElement('button');
+            copyBtn.innerHTML = '<i class="far fa-copy"></i> Copy SQL';
+            copyBtn.className = 'copy-sql-btn';
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(message).then(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+                    setTimeout(() => {
+                        copyBtn.innerHTML = '<i class="far fa-copy"></i> Copy SQL';
+                    }, 2000);
+                });
+            };
+            content.appendChild(copyBtn);
+        } else if (isHtml) {
+            content.innerHTML = marked.parse(message);
         } else {
             content.textContent = message;
         }
@@ -259,12 +277,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     allTables = data.all_tables;
                     addConfirmation(data.tables);
                 } else if (data.sql) {
-                    const formattedSql = `<pre><code>${data.sql}</code></pre>`;
-                    addMessage('bot', formattedSql, true);
-                    saveMessage('bot', formattedSql, true);
+                    addMessage('bot', data.sql, false, true);
+                    saveMessage('bot', data.sql, false, true);
                     if (data.explanation) {
-                        addMessage('bot', data.explanation, true);
-                        saveMessage('bot', data.explanation, true);
+                        addMessage('bot', data.explanation, true, false);
+                        saveMessage('bot', data.explanation, true, false);
                     }
                     conversationState = {}; // Reset state after completion
                 }
