@@ -1,13 +1,30 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const chatHistory = document.getElementById('chat-history');
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
     const newChatBtn = document.getElementById('new-chat-btn');
     const historyList = document.getElementById('history-list');
+    const tableList = document.getElementById('table-list');
 
     let conversationState = { prompt: '' };
     let currentChatId = null;
+    let allTables = [];
+
+    // Fetch and render tables
+    async function loadTables() {
+        try {
+            const response = await fetch('/api/tables');
+            const tables = await response.json();
+            tableList.innerHTML = '';
+            tables.forEach(table => {
+                const listItem = document.createElement('li');
+                listItem.textContent = table;
+                tableList.appendChild(listItem);
+            });
+        } catch (error) {
+            console.error('Error loading tables:', error);
+        }
+    }
 
     // Load chat history from local storage
     function loadChatHistory() {
@@ -16,7 +33,15 @@ document.addEventListener('DOMContentLoaded', () => {
         for (const chatId in chats) {
             const chat = chats[chatId];
             const listItem = document.createElement('li');
-            listItem.textContent = chat.title;
+
+            const words = chat.title.split(' ');
+            let displayTitle = chat.title;
+            if (words.length > 5) {
+                displayTitle = words.slice(0, 5).join(' ') + '...';
+            }
+            listItem.textContent = displayTitle;
+            listItem.title = chat.title; // Show full title on hover
+
             listItem.dataset.chatId = chatId;
             listItem.addEventListener('click', () => {
                 loadChat(chatId);
@@ -33,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentChatId = chatId;
             chatHistory.innerHTML = '';
             chat.messages.forEach(message => {
+                // This is a simplified representation. In a real app, you might need to re-render interactive elements.
                 addMessage(message.sender, message.message, message.isHtml);
             });
         }
@@ -45,8 +71,15 @@ document.addEventListener('DOMContentLoaded', () => {
             currentChatId = `chat_${Date.now()}`;
             chats[currentChatId] = { title: 'New Chat', messages: [] };
         }
-        chats[currentChatId].messages.push({ sender, message, isHtml });
-        if (chats[currentChatId].messages.length === 1) {
+
+        // Don't save the interactive confirmation message itself, just the final state.
+        const isConfirmation = typeof message === 'object' && message.confirmation;
+
+        if (!isConfirmation) {
+            chats[currentChatId].messages.push({ sender, message, isHtml });
+        }
+
+        if (chats[currentChatId].messages.length === 1 && !isConfirmation) {
             chats[currentChatId].title = message;
         }
         localStorage.setItem('chats', JSON.stringify(chats));
@@ -75,42 +108,135 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistory.scrollTop = chatHistory.scrollHeight;
     }
 
-    function addConfirmation(tables) {
-        const tablesList = `<ul>${tables.map(t => `<li>${t}</li>`).join('')}</ul>`;
-        const confirmationHtml = `<div>To answer that, I believe I need to use the following tables. Is this correct?</div>${tablesList}`;
-        addMessage('bot', confirmationHtml, true);
-        saveMessage('bot', confirmationHtml, true);
+    function addConfirmation(suggestedTables) {
+        let currentTables = [...suggestedTables];
 
-        const buttonContainer = document.createElement('div');
-        buttonContainer.classList.add('confirmation-buttons');
-        
-        const yesBtn = document.createElement('button');
-        yesBtn.textContent = 'Yes';
-        yesBtn.onclick = () => handleConfirmation(true, tables);
-        
-        const noBtn = document.createElement('button');
-        noBtn.textContent = 'No';
-        noBtn.onclick = () => handleConfirmation(false);
+        const confirmationContainer = document.createElement('div');
+        confirmationContainer.classList.add('confirmation-container');
 
-        buttonContainer.appendChild(yesBtn);
-        buttonContainer.appendChild(noBtn);
-        chatHistory.appendChild(buttonContainer);
-        chatHistory.scrollTop = chatHistory.scrollHeight;
+        const message = document.createElement('p');
+        message.textContent = "I'm planning to use the tables below to generate the query";
+        confirmationContainer.appendChild(message);
+
+        const tableSelector = document.createElement('div');
+        tableSelector.classList.add('table-selector');
+        
+        const header = document.createElement('div');
+        header.classList.add('table-selector-header');
+        header.textContent = 'Tables to be used:';
+        tableSelector.appendChild(header);
+
+        const searchInput = document.createElement('input');
+        searchInput.type = 'text';
+        searchInput.placeholder = 'Add another table...';
+        searchInput.classList.add('table-search-input');
+        tableSelector.appendChild(searchInput);
+
+        const tableListElement = document.createElement('ul');
+        tableListElement.classList.add('table-list');
+        tableSelector.appendChild(tableListElement);
+
+        const suggestionsList = document.createElement('ul');
+        suggestionsList.classList.add('suggestions-list');
+        tableSelector.appendChild(suggestionsList);
+
+        const renderTableList = () => {
+            tableListElement.innerHTML = '';
+            currentTables.forEach(table => {
+                const listItem = document.createElement('li');
+                listItem.textContent = table;
+                const removeBtn = document.createElement('span');
+                removeBtn.textContent = ' ×';
+                removeBtn.classList.add('remove-table');
+                removeBtn.onclick = () => {
+                    currentTables = currentTables.filter(t => t !== table);
+                    renderTableList();
+                };
+                listItem.appendChild(removeBtn);
+                tableListElement.appendChild(listItem);
+            });
+        };
+
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            suggestionsList.innerHTML = '';
+            if (query) {
+                const filteredTables = allTables.filter(t => t.toLowerCase().includes(query) && !currentTables.includes(t));
+                filteredTables.forEach(table => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = table;
+                    listItem.onclick = () => {
+                        currentTables.push(table);
+                        renderTableList();
+                        searchInput.value = '';
+                        suggestionsList.innerHTML = '';
+                    };
+                    suggestionsList.appendChild(listItem);
+                });
+            }
+        });
+
+        const looksGoodBtn = document.createElement('button');
+        looksGoodBtn.classList.add('looks-good-btn');
+        looksGoodBtn.textContent = 'Looks Good';
+        
+        let countdown = 10;
+        const countdownInterval = setInterval(() => {
+            countdown--;
+            looksGoodBtn.textContent = `Looks Good (${countdown})`;
+            if (countdown <= 0) {
+                clearInterval(countdownInterval);
+                looksGoodBtn.textContent = 'Looks Good';
+                looksGoodBtn.disabled = false;
+            }
+        }, 1000);
+
+        looksGoodBtn.onclick = () => {
+            clearInterval(countdownInterval);
+            handleConfirmation(true, currentTables, confirmationContainer);
+        };
+        
+        tableSelector.appendChild(looksGoodBtn);
+        confirmationContainer.appendChild(tableSelector);
+
+        // Append to chat history
+        const botMessage = document.createElement('div');
+        botMessage.classList.add('message', 'bot');
+        const avatar = document.createElement('img');
+        avatar.classList.add('avatar');
+        avatar.src = 'https://img.icons8.com/fluency/48/000000/bot.png';
+        botMessage.appendChild(avatar);
+        botMessage.appendChild(confirmationContainer);
+        chatHistory.appendChild(botMessage);
+
+        renderTableList();
+        saveMessage('bot', { confirmation: true }, true);
     }
 
-    async function handleConfirmation(isCorrect, tables = []) {
-        document.querySelector('.confirmation-buttons').remove(); // Remove buttons after click
-        if (isCorrect) {
-            addMessage('user', 'Yes, that is correct.');
-            saveMessage('user', 'Yes, that is correct.');
-            await sendMessage(conversationState.prompt, tables);
-        } else {
-            addMessage('user', 'No, that is not correct.');
-            saveMessage('user', 'No, that is not correct.');
-            addMessage('bot', 'My apologies. Please try rephrasing your question or provide more specific details about the tables I should use.');
-            saveMessage('bot', 'My apologies. Please try rephrasing your question or provide more specific details about the tables I should use.');
-            conversationState = {}; // Reset state
-        }
+    async function handleConfirmation(isCorrect, tables = [], confirmationContainer) {
+      const confirmationMessage = `Confirmed tables: ${tables.join(', ')}`;
+      addMessage('user', confirmationMessage);
+      saveMessage('user', confirmationMessage);
+
+      if (isCorrect) {
+          // Visually disable the confirmation container instead of removing it
+          confirmationContainer.classList.add('disabled');
+          const searchInput = confirmationContainer.querySelector('.table-search-input');
+          searchInput.disabled = true;
+
+          const removeBtns = confirmationContainer.querySelectorAll('.remove-table');
+          removeBtns.forEach(btn => btn.style.display = 'none');
+
+          const looksGoodBtn = confirmationContainer.querySelector('.looks-good-btn');
+          looksGoodBtn.style.display = 'none';
+
+
+          await sendMessage(conversationState.prompt, tables);
+      } else {
+          addMessage('bot', 'My apologies. Please try rephrasing your question or provide more specific details about the tables I should use.');
+          saveMessage('bot', 'My apologies. Please try rephrasing your question or provide more specific details about the tables I should use.');
+          conversationState = {}; // Reset state
+      }
     }
 
     async function sendMessage(prompt, tables = null) {
@@ -130,6 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (response.ok) {
                 if (data.tables) {
+                    allTables = data.all_tables;
                     addConfirmation(data.tables);
                 } else if (data.sql) {
                     const formattedSql = `<pre><code>${data.sql}</code></pre>`;
@@ -166,9 +293,26 @@ document.addEventListener('DOMContentLoaded', () => {
         addMessage('user', prompt);
         saveMessage('user', prompt);
         userInput.value = '';
-        
-        conversationState.prompt = prompt;
-        await sendMessage(prompt);
+
+        // Check if there's an active confirmation
+        const confirmationContainer = document.querySelector('.confirmation-container:not(.disabled)');
+        if (confirmationContainer) {
+            // If the user types a message while the confirmation is active,
+            // treat it as feedback and retry the query generation.
+            const currentTables = Array.from(confirmationContainer.querySelectorAll('.table-list li')).map(li => li.textContent.replace(' ×',''));
+            const feedback = prompt;
+            const combinedPrompt = `${conversationState.prompt} (user feedback: ${feedback})`;
+            
+            const parentMessage = confirmationContainer.closest('.message.bot');
+            if(parentMessage) {
+                parentMessage.remove();
+            }
+
+            await sendMessage(combinedPrompt, currentTables);
+        } else {
+            conversationState.prompt = prompt;
+            await sendMessage(prompt);
+        }
     }
 
     // New Chat button event listener
@@ -181,14 +325,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initial bot message
     addMessage('bot', 'Hey! I\'m your personal SQL agent. Ask me a question about your data, and I\'ll help you build the right query to answer it.');
 
-    window.handleConfirmation = handleConfirmation; // Make it accessible globally for the button clicks
+    window.handleConfirmation = handleConfirmation; 
     sendBtn.addEventListener('click', handleUserInput);
     userInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-            e.preventDefault(); // Prevent default behavior
+            e.preventDefault(); 
             handleUserInput();
         }
     });
 
+    loadTables();
     loadChatHistory();
 });

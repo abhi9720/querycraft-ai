@@ -18,6 +18,16 @@ logging.basicConfig(
     filemode="a",  # Append to the log file
 )
 
+@api_bp.route("/tables", methods=["GET"])
+def get_tables():
+    try:
+        with open("schema.json") as f:
+            schema_json = json.load(f)
+        all_tables = list(schema_json.keys())
+        return jsonify(all_tables)
+    except Exception as e:
+        logging.exception("An error occurred while fetching tables.")
+        return jsonify({"error": "An internal server error occurred.", "description": str(e)}), 500
 
 @api_bp.route("/generate", methods=["POST"])
 def generate():
@@ -34,6 +44,7 @@ def generate():
 
         with open("schema.json") as f:
             schema_json = json.load(f)
+        all_tables = list(schema_json.keys())
 
         schema = ""
         for table_name, table_data in schema_json.items():
@@ -47,7 +58,7 @@ def generate():
             # If no tables are provided, it's the first step: identify tables.
             table_agent = TableIdentificationAgent()
             identified_tables = table_agent.run(prompt, schema)
-            return jsonify({"tables": identified_tables.split(",")})
+            return jsonify({"tables": identified_tables.split(","), "all_tables": all_tables})
         else:
             # If tables are provided, it's the second step: generate the query.
             sql_agent = SQLAgent()
