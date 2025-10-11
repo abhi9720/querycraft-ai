@@ -3,7 +3,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const sendBtn = document.getElementById('send-btn');
 
-    // Function to add a message to the chat history
+    let conversationState = { prompt: '' };
+
     function addMessage(sender, message, isHtml = false) {
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', sender);
@@ -26,56 +27,101 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistory.scrollTop = chatHistory.scrollHeight;
     }
 
-    // Function to handle sending a message
-    async function sendMessage() {
-        const prompt = userInput.value.trim();
-        if (prompt === '') return;
+    function addConfirmation(tables) {
+        const tablesList = `<ul>${tables.map(t => `<li>${t}</li>`).join('')}</ul>`;
+        const confirmationHtml = `<div>To answer that, I believe I need to use the following tables. Is this correct?</div>${tablesList}`;
+        addMessage('bot', confirmationHtml, true);
 
-        addMessage('user', prompt);
-        userInput.value = '';
+        const buttonContainer = document.createElement('div');
+        buttonContainer.classList.add('confirmation-buttons');
+        
+        const yesBtn = document.createElement('button');
+        yesBtn.textContent = 'Yes';
+        yesBtn.onclick = () => handleConfirmation(true, tables);
+        
+        const noBtn = document.createElement('button');
+        noBtn.textContent = 'No';
+        noBtn.onclick = () => handleConfirmation(false);
 
+        buttonContainer.appendChild(yesBtn);
+        buttonContainer.appendChild(noBtn);
+        chatHistory.appendChild(buttonContainer);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    async function handleConfirmation(isCorrect, tables = []) {
+        document.querySelector('.confirmation-buttons').remove(); // Remove buttons after click
+        if (isCorrect) {
+            addMessage('user', 'Yes, that is correct.');
+            await sendMessage(conversationState.prompt, tables);
+        } else {
+            addMessage('user', 'No, that is not correct.');
+            addMessage('bot', 'My apologies. Please try rephrasing your question or provide more specific details about the tables I should use.');
+            conversationState = {}; // Reset state
+        }
+    }
+
+    async function sendMessage(prompt, tables = null) {
         try {
+            const body = { prompt };
+            if (tables) {
+                body.tables = tables;
+            }
+
             const response = await fetch('/api/generate', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ prompt })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                if (data.sql) {
+                if (data.tables) {
+                    addConfirmation(data.tables);
+                } else if (data.sql) {
                     const formattedSql = `<pre><code>${data.sql}</code></pre>`;
                     addMessage('bot', formattedSql, true);
-                }
-                if (data.explanation) {
-                    addMessage('bot', data.explanation, true);
+                    if (data.explanation) {
+                        addMessage('bot', data.explanation, true);
+                    }
+                    conversationState = {}; // Reset state after completion
                 }
             } else {
-                // If the response is not OK, it's an error
-                let errorMessage = data.error || 'Sorry, something went wrong.';
-                if (data.description) {
-                    errorMessage += `<br><pre>${data.description}</pre>`;
-                }
+                const errorMessage = data.error || 'Sorry, something went wrong.';
                 addMessage('bot', errorMessage, true);
+                if(data.description) {
+                    addMessage('bot', `<pre>${data.description}</pre>`, true);
+                }
+                conversationState = {}; // Reset state on error
             }
-            
         } catch (error) {
             console.error('Error:', error);
             addMessage('bot', 'Sorry, something went wrong. Please try again.');
+            conversationState = {}; // Reset state on error
         }
     }
 
-    // Event listeners
-    sendBtn.addEventListener('click', sendMessage);
-    userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
+    async function handleUserInput() {
+        const prompt = userInput.value.trim();
+        if (prompt === '') return;
+
+        addMessage('user', prompt);
+        userInput.value = '';
+        
+        conversationState.prompt = prompt;
+        await sendMessage(prompt);
+    }
 
     // Initial bot message
-    addMessage('bot', 'Hey Jeffrey, ask me a question, and I can help you by generating a first-draft query.');
+    addMessage('bot', 'Hey! I\'m your personal SQL agent. Ask me a question about your data, and I\'ll help you build the right query to answer it.');
+
+    window.handleConfirmation = handleConfirmation; // Make it accessible globally for the button clicks
+    sendBtn.addEventListener('click', handleUserInput);
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Prevent default behavior
+            handleUserInput();
+        }
+    });
 });
