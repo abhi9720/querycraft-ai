@@ -5,6 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const newChatBtn = document.getElementById('new-chat-btn');
     const historyList = document.getElementById('history-list');
     const tableList = document.getElementById('table-list');
+    const modal = document.getElementById('table-preview-modal');
+    const closeBtn = document.querySelector('.close-btn');
+    const modalTableName = document.getElementById('modal-table-name');
+    const modalColumnsList = document.getElementById('modal-columns-list');
+    const modalSampleData = document.getElementById('modal-sample-data');
 
     let conversationState = { prompt: '' };
     let currentChatId = null;
@@ -18,13 +23,94 @@ document.addEventListener('DOMContentLoaded', () => {
             tableList.innerHTML = '';
             tables.forEach(table => {
                 const listItem = document.createElement('li');
-                listItem.textContent = table;
+                
+                const tableNameSpan = document.createElement('span');
+                tableNameSpan.textContent = table;
+                listItem.appendChild(tableNameSpan);
+
+                const previewIcon = document.createElement('i');
+                previewIcon.className = 'fas fa-eye preview-icon';
+                previewIcon.title = 'Preview Table';
+                previewIcon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openTablePreview(table);
+                });
+                listItem.appendChild(previewIcon);
+
                 tableList.appendChild(listItem);
             });
         } catch (error) {
             console.error('Error loading tables:', error);
         }
     }
+
+    // Open table preview modal
+    async function openTablePreview(tableName) {
+        try {
+            const response = await fetch(`/api/table/${tableName}`);
+            const data = await response.json();
+
+            if (response.ok) {
+                modalTableName.textContent = tableName;
+                
+                modalColumnsList.innerHTML = '';
+                data.columns.forEach(column => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = `${column.name} (${column.type})`;
+                    modalColumnsList.appendChild(listItem);
+                });
+
+                modalSampleData.innerHTML = '';
+                if (data.sample_data && data.sample_data.length > 0) {
+                    const table = document.createElement('table');
+                    const thead = document.createElement('thead');
+                    const tbody = document.createElement('tbody');
+                    const headerRow = document.createElement('tr');
+
+                    Object.keys(data.sample_data[0]).forEach(key => {
+                        const th = document.createElement('th');
+                        th.textContent = key;
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+
+                    data.sample_data.forEach(rowData => {
+                        const row = document.createElement('tr');
+                        Object.values(rowData).forEach(value => {
+                            const td = document.createElement('td');
+                            td.textContent = value;
+                            row.appendChild(td);
+                        });
+                        tbody.appendChild(row);
+                    });
+
+                    table.appendChild(thead);
+                    table.appendChild(tbody);
+                    modalSampleData.appendChild(table);
+                } else {
+                    modalSampleData.textContent = 'No sample data available.';
+                }
+
+                modal.style.display = 'block';
+            } else {
+                throw new Error(data.error || 'Failed to fetch table preview.');
+            }
+        } catch (error) {
+            console.error('Error fetching table preview:', error);
+            alert(`Error: ${error.message}`);
+        }
+    }
+
+    // Close modal
+    closeBtn.onclick = () => {
+        modal.style.display = 'none';
+    };
+
+    window.onclick = (event) => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    };
 
     // Load chat history from local storage
     function loadChatHistory() {

@@ -64,6 +64,9 @@ body {
 }
 
 .sidebar ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 8px 0;
     cursor: pointer;
     color: #c0c0c0;
@@ -73,6 +76,16 @@ body {
 }
 
 .sidebar ul li:hover {
+    color: #f6d365;
+}
+
+.preview-icon {
+    margin-left: 10px;
+    cursor: pointer;
+    color: #a0a0e0;
+}
+
+.preview-icon:hover {
     color: #f6d365;
 }
 
@@ -309,4 +322,76 @@ body {
 .confirmation-container.disabled .table-selector {
     opacity: 0.6;
     pointer-events: none;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+}
+
+.modal-content {
+    background-color: #1a1a2e;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #2a2a4e;
+    width: 80%;
+    max-width: 600px;
+    border-radius: 10px;
+    position: relative;
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: #f6d365;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#modal-table-name {
+    color: #f6d365;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+#modal-columns-list {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 20px;
+}
+
+#modal-columns-list li {
+    padding: 5px 0;
+    font-size: 16px;
+}
+
+#modal-sample-data table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+#modal-sample-data th,
+#modal-sample-data td {
+    border: 1px solid #2a2a4e;
+    padding: 8px;
+    text-align: left;
+}
+
+#modal-sample-data th {
+    background-color: #2a2a4e;
+    color: #a0a0e0;
 }

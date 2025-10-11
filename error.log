@@ -290,3 +290,95 @@ IndexError: list index out of range
 2025-10-11 06:49:10,324 - INFO - 127.0.0.1 - - [11/Oct/2025 06:49:10] "GET /api/tables HTTP/1.1" 200 -
 2025-10-11 06:49:46,407 - INFO - 127.0.0.1 - - [11/Oct/2025 06:49:46] "POST /api/generate HTTP/1.1" 200 -
 2025-10-11 06:50:00,551 - INFO - 127.0.0.1 - - [11/Oct/2025 06:50:00] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 06:52:57,753 - INFO -  * Detected change in '/home/user/querygpt/api/routes.py', reloading
+2025-10-11 06:52:58,205 - INFO -  * Detected change in '/home/user/querygpt/api/routes.py', reloading
+2025-10-11 06:52:59,523 - WARNING -  * Debugger is active!
+2025-10-11 06:52:59,531 - INFO -  * Debugger PIN: 973-821-662
+2025-10-11 06:53:00,074 - INFO -  * Restarting with stat
+2025-10-11 06:53:00,720 - WARNING -  * Debugger is active!
+2025-10-11 06:53:00,725 - INFO -  * Debugger PIN: 973-821-662
+2025-10-11 07:04:25,448 - INFO - 127.0.0.1 - - [11/Oct/2025 07:04:25] "GET /?embedded=0&monospaceUid=718773 HTTP/1.1" 200 -
+2025-10-11 07:04:25,732 - INFO - 127.0.0.1 - - [11/Oct/2025 07:04:25] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 07:04:25,891 - INFO - 127.0.0.1 - - [11/Oct/2025 07:04:25] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 07:04:26,062 - INFO - 127.0.0.1 - - [11/Oct/2025 07:04:26] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 07:04:27,628 - ERROR - An error occurred while fetching table schema.
+Traceback (most recent call last):
+  File "/home/user/querygpt/api/routes.py", line 48, in get_table_schema
+    cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
+sqlite3.OperationalError: no such table: users
+2025-10-11 07:04:27,630 - INFO - 127.0.0.1 - - [11/Oct/2025 07:04:27] "[35m[1mGET /api/table/users HTTP/1.1[0m" 500 -
+2025-10-11 07:04:29,175 - ERROR - An error occurred while fetching table schema.
+Traceback (most recent call last):
+  File "/home/user/querygpt/api/routes.py", line 48, in get_table_schema
+    cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
+sqlite3.OperationalError: no such table: products
+2025-10-11 07:04:29,176 - INFO - 127.0.0.1 - - [11/Oct/2025 07:04:29] "[35m[1mGET /api/table/products HTTP/1.1[0m" 500 -
+2025-10-11 07:11:53,183 - ERROR - An error occurred while fetching table schema.
+Traceback (most recent call last):
+  File "/home/user/querygpt/api/routes.py", line 48, in get_table_schema
+    cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
+sqlite3.OperationalError: no such table: orders
+2025-10-11 07:11:53,184 - INFO - 127.0.0.1 - - [11/Oct/2025 07:11:53] "[35m[1mGET /api/table/orders HTTP/1.1[0m" 500 -
+2025-10-11 07:13:09,548 - ERROR - An error occurred while fetching table schema.
+Traceback (most recent call last):
+  File "/home/user/querygpt/api/routes.py", line 48, in get_table_schema
+    cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
+sqlite3.OperationalError: no such table: products
+2025-10-11 07:13:09,549 - INFO - 127.0.0.1 - - [11/Oct/2025 07:13:09] "[35m[1mGET /api/table/products HTTP/1.1[0m" 500 -
+2025-10-11 07:14:09,306 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9002
+ * Running on http://10.88.0.3:9002
+2025-10-11 07:14:09,306 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-11 07:14:09,307 - INFO -  * Restarting with stat
+2025-10-11 07:14:10,027 - WARNING -  * Debugger is active!
+2025-10-11 07:14:10,032 - INFO -  * Debugger PIN: 973-821-662
+2025-10-11 07:14:10,053 - INFO - 127.0.0.1 - - [11/Oct/2025 07:14:10] "GET /?monospaceUid=492666 HTTP/1.1" 200 -
+2025-10-11 07:14:10,240 - INFO - 127.0.0.1 - - [11/Oct/2025 07:14:10] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 07:14:10,399 - INFO - 127.0.0.1 - - [11/Oct/2025 07:14:10] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 07:14:10,568 - INFO - 127.0.0.1 - - [11/Oct/2025 07:14:10] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 07:14:12,042 - ERROR - An error occurred while fetching table schema.
+Traceback (most recent call last):
+  File "/home/user/querygpt/api/routes.py", line 48, in get_table_schema
+    cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
+sqlite3.OperationalError: no such table: orders
+2025-10-11 07:14:12,043 - INFO - 127.0.0.1 - - [11/Oct/2025 07:14:12] "[35m[1mGET /api/table/orders HTTP/1.1[0m" 500 -
+2025-10-11 07:16:38,386 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9002
+ * Running on http://10.88.0.3:9002
+2025-10-11 07:16:38,386 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-11 07:16:38,387 - INFO -  * Restarting with stat
+2025-10-11 07:16:39,107 - WARNING -  * Debugger is active!
+2025-10-11 07:16:39,112 - INFO -  * Debugger PIN: 973-821-662
+2025-10-11 07:16:39,133 - INFO - 127.0.0.1 - - [11/Oct/2025 07:16:39] "GET /?monospaceUid=781689 HTTP/1.1" 200 -
+2025-10-11 07:16:39,296 - INFO - 127.0.0.1 - - [11/Oct/2025 07:16:39] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-11 07:16:39,450 - INFO - 127.0.0.1 - - [11/Oct/2025 07:16:39] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 07:16:39,615 - INFO - 127.0.0.1 - - [11/Oct/2025 07:16:39] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 07:16:41,304 - ERROR - An error occurred while fetching table schema.
+Traceback (most recent call last):
+  File "/home/user/querygpt/api/routes.py", line 48, in get_table_schema
+    cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
+sqlite3.OperationalError: no such table: products
+2025-10-11 07:16:41,306 - INFO - 127.0.0.1 - - [11/Oct/2025 07:16:41] "[35m[1mGET /api/table/products HTTP/1.1[0m" 500 -
+2025-10-11 07:20:45,551 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9002
+ * Running on http://10.88.0.3:9002
+2025-10-11 07:20:45,552 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-11 07:20:45,552 - INFO -  * Restarting with stat
+2025-10-11 07:20:46,255 - WARNING -  * Debugger is active!
+2025-10-11 07:20:46,260 - INFO -  * Debugger PIN: 973-821-662
+2025-10-11 07:21:15,244 - INFO - 127.0.0.1 - - [11/Oct/2025 07:21:15] "GET /?embedded=0&monospaceUid=718773 HTTP/1.1" 200 -
+2025-10-11 07:21:15,513 - INFO - 127.0.0.1 - - [11/Oct/2025 07:21:15] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 07:21:15,676 - INFO - 127.0.0.1 - - [11/Oct/2025 07:21:15] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 07:21:15,838 - INFO - 127.0.0.1 - - [11/Oct/2025 07:21:15] "GET /api/tables HTTP/1.1" 200 -
+2025-10-11 07:21:21,162 - INFO - 127.0.0.1 - - [11/Oct/2025 07:21:21] "GET /api/table/users HTTP/1.1" 200 -
+2025-10-11 07:21:29,747 - INFO - 127.0.0.1 - - [11/Oct/2025 07:21:29] "GET /api/table/orders HTTP/1.1" 200 -
+2025-10-11 07:21:42,668 - INFO - 127.0.0.1 - - [11/Oct/2025 07:21:42] "GET /api/table/users HTTP/1.1" 200 -
+2025-10-11 07:21:49,216 - INFO - 127.0.0.1 - - [11/Oct/2025 07:21:49] "GET /api/table/products HTTP/1.1" 200 -
+2025-10-11 07:22:16,561 - INFO - 127.0.0.1 - - [11/Oct/2025 07:22:16] "GET /api/table/orders HTTP/1.1" 200 -
+2025-10-11 07:24:16,576 - INFO - 127.0.0.1 - - [11/Oct/2025 07:24:16] "GET /?embedded=0&monospaceUid=718773 HTTP/1.1" 200 -
+2025-10-11 07:24:16,856 - INFO - 127.0.0.1 - - [11/Oct/2025 07:24:16] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 07:24:17,007 - INFO - 127.0.0.1 - - [11/Oct/2025 07:24:17] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 07:24:17,167 - INFO - 127.0.0.1 - - [11/Oct/2025 07:24:17] "GET /api/tables HTTP/1.1" 200 -
