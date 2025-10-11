@@ -1,68 +1,81 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const chatHistory = document.getElementById('chat-history');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
 
-document.getElementById('generate-btn').addEventListener('click', async () => {
-    const promptInput = document.getElementById('prompt-input');
-    const prompt = promptInput.value;
+    // Function to add a message to the chat history
+    function addMessage(sender, message, isHtml = false) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', sender);
 
-    if (!prompt) {
-        alert('Please enter a prompt.');
-        return;
-    }
-
-    const loader = document.getElementById('loader');
-    const resultDiv = document.getElementById('result');
-    const errorDiv = document.getElementById('error');
-    const sqlOutput = document.getElementById('sql-output');
-    const explanationOutput = document.getElementById('explanation-output');
-
-    // Reset UI
-    resultDiv.style.display = 'none';
-    errorDiv.style.display = 'none';
-    loader.style.display = 'block';
-
-    try {
-        // Step 1: Suggest tables
-        const tablesResponse = await fetch('/api/suggest_tables', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ prompt: prompt })
-        });
-
-        if (!tablesResponse.ok) {
-            throw new Error('Failed to suggest tables.');
+        const avatar = document.createElement('img');
+        avatar.classList.add('avatar');
+        avatar.src = sender === 'user' ? 'https://img.icons8.com/color/48/000000/user-male-circle.png' : 'https://img.icons8.com/fluency/48/000000/bot.png';
+        
+        const content = document.createElement('div');
+        content.classList.add('content');
+        if (isHtml) {
+            content.innerHTML = message;
+        } else {
+            content.textContent = message;
         }
 
-        const tablesData = await tablesResponse.json();
-        const tables = tablesData.tables;
-
-        // Step 2: Generate SQL
-        const sqlResponse = await fetch('/api/generate_sql', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ prompt: prompt, tables: tables })
-        });
-
-        if (!sqlResponse.ok) {
-            throw new Error('Failed to generate SQL.');
-        }
-
-        const sqlData = await sqlResponse.json();
-
-        // Display results
-        sqlOutput.textContent = sqlData.sql;
-        explanationOutput.innerHTML = marked.parse(sqlData.explanation);
-
-        // Highlight the code
-        hljs.highlightAll();
-
-        resultDiv.style.display = 'grid';
-    } catch (error) {
-        errorDiv.textContent = error.message;
-        errorDiv.style.display = 'block';
-    } finally {
-        loader.style.display = 'none';
+        messageElement.appendChild(avatar);
+        messageElement.appendChild(content);
+        chatHistory.appendChild(messageElement);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
     }
+
+    // Function to handle sending a message
+    async function sendMessage() {
+        const prompt = userInput.value.trim();
+        if (prompt === '') return;
+
+        addMessage('user', prompt);
+        userInput.value = '';
+
+        try {
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                if (data.sql) {
+                    const formattedSql = `<pre><code>${data.sql}</code></pre>`;
+                    addMessage('bot', formattedSql, true);
+                }
+                if (data.explanation) {
+                    addMessage('bot', data.explanation, true);
+                }
+            } else {
+                // If the response is not OK, it's an error
+                let errorMessage = data.error || 'Sorry, something went wrong.';
+                if (data.description) {
+                    errorMessage += `<br><pre>${data.description}</pre>`;
+                }
+                addMessage('bot', errorMessage, true);
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            addMessage('bot', 'Sorry, something went wrong. Please try again.');
+        }
+    }
+
+    // Event listeners
+    sendBtn.addEventListener('click', sendMessage);
+    userInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Initial bot message
+    addMessage('bot', 'Hey Jeffrey, ask me a question, and I can help you by generating a first-draft query.');
 });

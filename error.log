@@ -1,0 +1,36 @@
+2025-10-11 04:32:17,261 - INFO -  * Detected change in '/home/user/querygpt/api/routes.py', reloading
+2025-10-11 04:32:17,528 - INFO -  * Restarting with stat
+2025-10-11 04:32:18,122 - INFO -  * Detected change in '/home/user/querygpt/api/routes.py', reloading
+2025-10-11 04:32:18,478 - INFO -  * Restarting with stat
+2025-10-11 04:32:18,501 - WARNING -  * Debugger is active!
+2025-10-11 04:32:18,511 - INFO -  * Debugger PIN: 973-821-662
+2025-10-11 04:32:19,239 - WARNING -  * Debugger is active!
+2025-10-11 04:32:19,246 - INFO -  * Debugger PIN: 973-821-662
+2025-10-11 04:32:24,832 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9090
+ * Running on http://10.88.0.3:9090
+2025-10-11 04:32:24,833 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-11 04:32:24,833 - INFO -  * Restarting with stat
+2025-10-11 04:32:25,557 - WARNING -  * Debugger is active!
+2025-10-11 04:32:25,563 - INFO -  * Debugger PIN: 973-821-662
+2025-10-11 04:32:37,917 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9002
+ * Running on http://10.88.0.3:9002
+2025-10-11 04:32:37,917 - INFO - [33mPress CTRL+C to quit[0m
+2025-10-11 04:32:37,918 - INFO -  * Restarting with stat
+2025-10-11 04:32:38,639 - WARNING -  * Debugger is active!
+2025-10-11 04:32:38,646 - INFO -  * Debugger PIN: 973-821-662
+2025-10-11 04:32:38,672 - INFO - 127.0.0.1 - - [11/Oct/2025 04:32:38] "GET /?monospaceUid=272529 HTTP/1.1" 200 -
+2025-10-11 04:32:38,839 - INFO - 127.0.0.1 - - [11/Oct/2025 04:32:38] "[36mGET /static/js/script.js HTTP/1.1[0m" 304 -
+2025-10-11 04:32:38,998 - INFO - 127.0.0.1 - - [11/Oct/2025 04:32:38] "[36mGET /static/css/style.css HTTP/1.1[0m" 304 -
+2025-10-11 04:32:56,829 - INFO - 127.0.0.1 - - [11/Oct/2025 04:32:56] "GET /?monospaceUid=718773&embedded=0 HTTP/1.1" 200 -
+2025-10-11 04:32:57,009 - INFO - 127.0.0.1 - - [11/Oct/2025 04:32:57] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 04:32:57,162 - INFO - 127.0.0.1 - - [11/Oct/2025 04:32:57] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 04:33:13,954 - INFO - 127.0.0.1 - - [11/Oct/2025 04:33:13] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 04:33:16,170 - INFO - 127.0.0.1 - - [11/Oct/2025 04:33:16] "POST /api/generate HTTP/1.1" 200 -
+2025-10-11 04:33:36,030 - INFO - 127.0.0.1 - - [11/Oct/2025 04:33:36] "GET /?monospaceUid=718773&embedded=0 HTTP/1.1" 200 -
+2025-10-11 04:33:36,267 - INFO - 127.0.0.1 - - [11/Oct/2025 04:33:36] "GET /static/css/style.css HTTP/1.1" 200 -
+2025-10-11 04:33:36,272 - INFO - 127.0.0.1 - - [11/Oct/2025 04:33:36] "GET /static/js/script.js HTTP/1.1" 200 -
+2025-10-11 04:34:09,639 - INFO - 127.0.0.1 - - [11/Oct/2025 04:34:09] "POST /api/generate HTTP/1.1" 200 -
