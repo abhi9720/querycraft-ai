@@ -23,20 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
             tableList.innerHTML = '';
             tables.forEach(table => {
                 const listItem = document.createElement('li');
-                
-                const tableNameSpan = document.createElement('span');
-                tableNameSpan.textContent = table;
-                listItem.appendChild(tableNameSpan);
-
-                const previewIcon = document.createElement('i');
-                previewIcon.className = 'fas fa-eye preview-icon';
-                previewIcon.title = 'Preview Table';
-                previewIcon.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                listItem.textContent = table;
+                listItem.addEventListener('click', () => {
                     openTablePreview(table);
                 });
-                listItem.appendChild(previewIcon);
-
                 tableList.appendChild(listItem);
             });
         } catch (error) {
@@ -143,8 +133,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (chat) {
             currentChatId = chatId;
             chatHistory.innerHTML = '';
-            chat.messages.forEach(message => {
-                addMessage(message.sender, message.message, message.isHtml, message.isSql);
+            chat.messages.forEach((message, index) => {
+                if (message.sender === 'bot' && typeof message.message === 'object' && message.message.type === 'confirmation') {
+                    const nextMessage = chat.messages[index + 1];
+                    const isCompleted = nextMessage && nextMessage.sender === 'user' && nextMessage.message.startsWith('Confirmed tables:');
+                    addConfirmation(message.message.tables, true, isCompleted);
+                } else {
+                    addMessage(message.sender, message.message, message.isHtml, message.isSql);
+                }
             });
         }
     }
@@ -157,13 +153,9 @@ document.addEventListener('DOMContentLoaded', () => {
             chats[currentChatId] = { title: 'New Chat', messages: [] };
         }
 
-        const isConfirmation = typeof message === 'object' && message.confirmation;
+        chats[currentChatId].messages.push({ sender, message, isHtml, isSql });
 
-        if (!isConfirmation) {
-            chats[currentChatId].messages.push({ sender, message, isHtml, isSql });
-        }
-
-        if (chats[currentChatId].messages.length === 1 && !isConfirmation) {
+        if (chats[currentChatId].messages.length === 1 && sender === 'user') {
             chats[currentChatId].title = message;
         }
         localStorage.setItem('chats', JSON.stringify(chats));
@@ -212,14 +204,18 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistory.scrollTop = chatHistory.scrollHeight;
     }
 
-    function addConfirmation(suggestedTables) {
+    function addConfirmation(suggestedTables, isReloading = false, isCompleted = false) {
         let currentTables = [...suggestedTables];
 
         const confirmationContainer = document.createElement('div');
         confirmationContainer.classList.add('confirmation-container');
 
         const message = document.createElement('p');
-        message.textContent = "I'm planning to use the tables below to generate the query";
+        if (currentTables.length > 0) {
+            message.textContent = "I'm planning to use the tables below to generate the query. Does this look correct?";
+        } else {
+            message.textContent = "I couldn't identify the right tables for your request. Please select the tables you'd like to use below.";
+        }
         confirmationContainer.appendChild(message);
 
         const tableSelector = document.createElement('div');
@@ -249,14 +245,16 @@ document.addEventListener('DOMContentLoaded', () => {
             currentTables.forEach(table => {
                 const listItem = document.createElement('li');
                 listItem.textContent = table;
-                const removeBtn = document.createElement('span');
-                removeBtn.textContent = ' ×';
-                removeBtn.classList.add('remove-table');
-                removeBtn.onclick = () => {
-                    currentTables = currentTables.filter(t => t !== table);
-                    renderTableList();
-                };
-                listItem.appendChild(removeBtn);
+                if (!isCompleted) {
+                    const removeBtn = document.createElement('span');
+                    removeBtn.textContent = ' ×';
+                    removeBtn.classList.add('remove-table');
+                    removeBtn.onclick = () => {
+                        currentTables = currentTables.filter(t => t !== table);
+                        renderTableList();
+                    };
+                    listItem.appendChild(removeBtn);
+                }
                 tableListElement.appendChild(listItem);
             });
         };
@@ -284,26 +282,33 @@ document.addEventListener('DOMContentLoaded', () => {
         looksGoodBtn.classList.add('looks-good-btn');
         looksGoodBtn.textContent = 'Looks Good';
         
-        let countdown = 10;
-        const countdownInterval = setInterval(() => {
-            countdown--;
-            looksGoodBtn.textContent = `Looks Good (${countdown})`;
-            if (countdown <= 0) {
+        if (!isCompleted) {
+            let countdown = 10;
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                looksGoodBtn.textContent = `Looks Good (${countdown})`;
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    looksGoodBtn.textContent = 'Looks Good';
+                    looksGoodBtn.disabled = false;
+                }
+            }, 1000);
+            looksGoodBtn.onclick = () => {
                 clearInterval(countdownInterval);
-                looksGoodBtn.textContent = 'Looks Good';
-                looksGoodBtn.disabled = false;
-            }
-        }, 1000);
+                handleConfirmation(true, currentTables, confirmationContainer);
+            };
+        } else {
+            looksGoodBtn.style.display = 'none';
+        }
 
-        looksGoodBtn.onclick = () => {
-            clearInterval(countdownInterval);
-            handleConfirmation(true, currentTables, confirmationContainer);
-        };
-        
         tableSelector.appendChild(looksGoodBtn);
         confirmationContainer.appendChild(tableSelector);
 
-        // Append to chat history
+        if (isCompleted) {
+            confirmationContainer.classList.add('disabled');
+            searchInput.disabled = true;
+        }
+
         const botMessage = document.createElement('div');
         botMessage.classList.add('message', 'bot');
         const avatar = document.createElement('img');
@@ -314,7 +319,9 @@ document.addEventListener('DOMContentLoaded', () => {
         chatHistory.appendChild(botMessage);
 
         renderTableList();
-        saveMessage('bot', { confirmation: true }, true);
+        if (!isReloading) {
+            saveMessage('bot', { type: 'confirmation', tables: suggestedTables }, true);
+        }
     }
 
     async function handleConfirmation(isCorrect, tables = [], confirmationContainer) {
@@ -323,7 +330,6 @@ document.addEventListener('DOMContentLoaded', () => {
       saveMessage('user', confirmationMessage);
 
       if (isCorrect) {
-          // Visually disable the confirmation container instead of removing it
           confirmationContainer.classList.add('disabled');
           const searchInput = confirmationContainer.querySelector('.table-search-input');
           searchInput.disabled = true;
@@ -333,7 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
           const looksGoodBtn = confirmationContainer.querySelector('.looks-good-btn');
           looksGoodBtn.style.display = 'none';
-
 
           await sendMessage(conversationState.prompt, tables);
       } else {
@@ -345,7 +350,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function sendMessage(prompt, tables = null) {
         try {
-            const body = { prompt };
+            const chats = JSON.parse(localStorage.getItem('chats')) || {};
+            const currentChat = chats[currentChatId];
+            const history = currentChat ? currentChat.messages : [];
+
+            const body = { prompt, history };
             if (tables) {
                 body.tables = tables;
             }
@@ -359,10 +368,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
 
             if (response.ok) {
-                if (data.tables) {
+                if (data.type === 'confirm_tables') {
                     allTables = data.all_tables;
-                    addConfirmation(data.tables);
-                } else if (data.sql) {
+                    addConfirmation(data.tables, false);
+                } else if (data.type === 'sql_query') {
                     addMessage('bot', data.sql, false, true);
                     saveMessage('bot', data.sql, false, true);
                     if (data.explanation) {
@@ -370,6 +379,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         saveMessage('bot', data.explanation, true, false);
                     }
                     conversationState = {}; // Reset state after completion
+                } else if (data.type === 'direct_answer' || data.type === 'clarification') {
+                    addMessage('bot', data.response, true, false);
+                    saveMessage('bot', data.response, true, false);
                 }
             } else {
                 const errorMessage = data.error || 'Sorry, something went wrong.';
@@ -397,11 +409,8 @@ document.addEventListener('DOMContentLoaded', () => {
         saveMessage('user', prompt);
         userInput.value = '';
 
-        // Check if there's an active confirmation
         const confirmationContainer = document.querySelector('.confirmation-container:not(.disabled)');
         if (confirmationContainer) {
-            // If the user types a message while the confirmation is active,
-            // treat it as feedback and retry the query generation.
             const currentTables = Array.from(confirmationContainer.querySelectorAll('.table-list li')).map(li => li.textContent.replace(' ×',''));
             const feedback = prompt;
             const combinedPrompt = `${conversationState.prompt} (user feedback: ${feedback})`;

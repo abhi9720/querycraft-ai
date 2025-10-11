@@ -16,4 +16,7 @@ Prompt: {prompt}
 
 Required Tables:"""
         response = self.model.generate_content(full_prompt)
-        return response.parts[0].text.strip()
+        try:
+            return response.parts[0].text.strip()
+        except IndexError:
+            return "" # Return an empty string if the model gives an empty response
