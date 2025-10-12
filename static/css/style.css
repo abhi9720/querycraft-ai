@@ -378,6 +378,10 @@ body {
     font-size: 16px;
 }
 
+#modal-sample-data {
+    overflow-x: auto;
+}
+
 #modal-sample-data table {
     width: 100%;
     border-collapse: collapse;
