@@ -1,24 +1,5 @@
-# Environments
-.venv/
-.env
-
-# IDE and editor files
-.vscode/
-.idea/
-.idx/
-
-# Python cache
 __pycache__/
 *.pyc
-
-# Databases
 *.db
-*.sqlite
-*.sqlite3
-
-# Logs
 *.log
-error.log
-
-# Dependencies
-/node_modules
+.venv/

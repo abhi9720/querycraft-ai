@@ -33,7 +33,18 @@ By integrating this agent, an organization can empower its entire team to explor
 
 The application uses a multi-agent system where each agent has a specialized role. The process is orchestrated by a backend Flask API and presented to the user through a simple frontend.
 
-![QueryCraftAI Architecture](static/images/architecture.png)
+![QueryCraftAI Architecture](assets/architecture.png)
+
+### Dashboard / User Interface Screenshots
+
+#### Main Chat Interface
+![Main Chat Interface](assets/dashboard-1.png)
+
+#### SQL Query Result
+![Query Result](assets/dashboard-2.png)
+
+#### Additional Features
+![Dashboard Analytics](assets/dashboard-3.png)
 
 ## 6. Use Cases
 

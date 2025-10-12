@@ -4,7 +4,8 @@
     "columns": [
       {"name": "id", "type": "INTEGER", "description": "Primary key for the user."},
       {"name": "name", "type": "TEXT", "description": "Name of the user."},
-      {"name": "email", "type": "TEXT", "description": "Email of the user."}
+      {"name": "email", "type": "TEXT", "description": "Email of the user."},
+      {"name": "timestamp", "type": "TIMESTAMP", "description": "Timestamp of when the user was created."}
     ]
   },
   "products": {
@@ -12,7 +13,8 @@
     "columns": [
       {"name": "id", "type": "INTEGER", "description": "Primary key for the product."},
       {"name": "name", "type": "TEXT", "description": "Name of the product."},
-      {"name": "price", "type": "REAL", "description": "Price of the product."}
+      {"name": "price", "type": "REAL", "description": "Price of the product."},
+      {"name": "timestamp", "type": "TIMESTAMP", "description": "Timestamp of when the product was created."}
     ]
   },
   "orders": {
@@ -21,7 +23,8 @@
       {"name": "id", "type": "INTEGER", "description": "Primary key for the order."},
       {"name": "user_id", "type": "INTEGER", "description": "Foreign key referencing the users table."},
       {"name": "product_id", "type": "INTEGER", "description": "Foreign key referencing the products table."},
-      {"name": "quantity", "type": "INTEGER", "description": "Quantity of the product ordered."}
+      {"name": "quantity", "type": "INTEGER", "description": "Quantity of the product ordered."},
+      {"name": "timestamp", "type": "TIMESTAMP", "description": "Timestamp of when the order was created."}
     ]
   }
 }
