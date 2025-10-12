@@ -1,98 +1,115 @@
+
 import re
 from agents.base import BaseAgent
 from agents.intent_agent import IntentAgent
+from agents.prompt_enhancer_agent import PromptEnhancerAgent
 
 class OrchestratorAgent(BaseAgent):
     def __init__(self):
         super().__init__()
+        self.prompt_enhancer_agent = PromptEnhancerAgent()
         self.intent_agent = IntentAgent()
 
     def run(self, prompt, schema, tables=None, history=None):
-        history = history or []
-        intent = self.intent_agent.run(prompt, history)
+        if isinstance(history, dict):
+            messages = history.get('messages', [])
+            context = history.get('context', {})
+        else:
+            messages = history or []
+            context = {}
 
-        if intent == 'query_modification':
-            original_prompt, confirmed_tables = self._get_context_from_history(history)
-
-            if original_prompt and confirmed_tables:
-                new_prompt = f"Original request: {original_prompt}\n\nPlease modify the query to also: {prompt}"
-                return self._run_sql_generation(new_prompt, schema, confirmed_tables)
-            else:
-                intent = 'sql_generation'
-
-        if intent == 'query_explanation':
+        # Deterministic check: If the prompt is a SQL query, explain it directly.
+        if prompt.strip().lower().startswith('select'):
             from agents.query_explanation_agent import QueryExplanationAgent
             explanation_agent = QueryExplanationAgent()
             explanation = explanation_agent.run(prompt=prompt, query=prompt)
             return {"type": "direct_answer", "response": explanation}
 
-        if intent == 'awaiting_query_for_explanation':
+        # Step 1: Enhance the user's prompt to be context-aware
+        enhanced_prompt = self.prompt_enhancer_agent.run(prompt, history)
+
+        if tables:
+            return self._run_final_sql_generation(enhanced_prompt, schema, tables, messages, original_prompt=prompt)
+
+        # Step 2: Determine intent using the enhanced prompt
+        intent = self.intent_agent.run(enhanced_prompt, messages)
+
+        if intent == 'query_modification':
+            last_sql_query = context.get('last_query_sql') or self._get_last_sql_from_history(messages)
+            last_used_tables = context.get('last_used_tables') or self._get_last_tables_from_history(messages)
+            
+            if last_sql_query and last_used_tables:
+                return self._run_sql_modification(enhanced_prompt, schema, last_sql_query, last_used_tables)
+            else:
+                intent = 'sql_generation'
+
+        # This intent is now primarily for when the user says "explain this query" without providing one.
+        if intent == 'query_explanation':
             return {"type": "clarification", "response": "Of course, please provide the SQL query you would like me to explain."}
 
         if intent == 'direct_answer':
-            return {"type": "direct_answer", "response": self.generate_direct_answer(prompt)}
+            from agents.direct_answer_agent import DirectAnswerAgent
+            direct_answer_agent = DirectAnswerAgent()
+            response = direct_answer_agent.run(prompt, messages)
+            return {"type": "direct_answer", "response": response}
 
         if intent == 'sql_generation':
-            return self._run_sql_generation(prompt, schema, tables)
+            return self._run_table_identification(enhanced_prompt, schema)
         
+        # Fallback for when intent detection fails
         return {"type": "clarification", "response": "Could you please provide more details or be more specific?"}
 
-    def _run_sql_generation(self, prompt, schema, tables=None):
+    def _run_table_identification(self, prompt, schema):
+        from agents.table_identification_agent import TableIdentificationAgent
         all_db_tables = re.findall(r"Table `([^`]*)`", schema)
+        table_agent = TableIdentificationAgent()
+        identified_tables_str = table_agent.run(prompt, schema)
+        identified_tables = [t.strip() for t in identified_tables_str.split(",") if t.strip()] if identified_tables_str else []
+        return {"type": "confirm_tables", "tables": identified_tables, "all_tables": all_db_tables}
 
-        if not tables:
-            from agents.table_identification_agent import TableIdentificationAgent
-            table_agent = TableIdentificationAgent()
-            identified_tables_str = table_agent.run(prompt, schema)
-            
-            identified_tables = []
-            if identified_tables_str:
-                identified_tables = [t.strip() for t in identified_tables_str.split(",") if t.strip()]
+    def _run_final_sql_generation(self, prompt, schema, tables, history, original_prompt):
+        from agents.sql_agent import SQLAgent
+        from agents.query_explanation_agent import QueryExplanationAgent
 
-            return {"type": "confirm_tables", "tables": identified_tables, "all_tables": all_db_tables}
-        else:
-            from agents.column_prune_agent import ColumnPruneAgent
-            from agents.sql_agent import SQLAgent
-            from agents.query_explanation_agent import QueryExplanationAgent
+        sql_agent = SQLAgent()
+        sql_query = sql_agent.run(prompt, schema, tables)
 
-            column_prune_agent = ColumnPruneAgent()
-            pruned_schema_dict = column_prune_agent.run(prompt, schema, tables)
+        if sql_query.strip().startswith("Error:"):
+            return {"type": "direct_answer", "response": sql_query}
 
-            sql_agent = SQLAgent()
-            sql_query = sql_agent.run(prompt, pruned_schema_dict, tables)
+        explanation_agent = QueryExplanationAgent()
+        explanation = explanation_agent.run(prompt=original_prompt, query=sql_query)
 
-            # If the SQL agent returns an error, just return the explanation as a direct answer.
-            if sql_query.strip().startswith("Error:"):
-                explanation_agent = QueryExplanationAgent()
-                explanation = explanation_agent.run(prompt=prompt, query=sql_query)
-                return {"type": "direct_answer", "response": explanation}
+        new_context = {'last_query_sql': sql_query, 'last_used_tables': tables}
+        return {"type": "sql_query", "sql": sql_query, "explanation": explanation, "context": new_context}
 
-            explanation_agent = QueryExplanationAgent()
-            explanation = explanation_agent.run(prompt=prompt, query=sql_query)
+    def _run_sql_modification(self, prompt, schema, original_sql, tables):
+        from agents.sql_agent import SQLAgent
+        from agents.query_explanation_agent import QueryExplanationAgent
 
-            return {"type": "sql_query", "sql": sql_query, "explanation": explanation}
+        sql_agent = SQLAgent()
+        modified_sql = sql_agent.modify_sql(original_sql, prompt, schema, tables)
 
-    def generate_direct_answer(self, prompt):
-        prompt_lower = prompt.lower()
-        if any(phrase in prompt_lower for phrase in ["what is your name", "who are you"]):
-            return "I am a sophisticated AI assistant designed to help you with your data-related tasks."
-        return "I am not sure how to answer that."
+        if modified_sql.strip().startswith("Error:"):
+            return {"type": "direct_answer", "response": modified_sql}
 
-    def _get_context_from_history(self, history):
-        original_prompt = None
-        confirmed_tables = None
-
-        for message in reversed(history):
-            if message.get('sender') == 'user' and message.get('message', '').startswith('Confirmed tables:'):
-                tables_str = message['message'].replace('Confirmed tables:', '').strip()
-                if tables_str:
-                    confirmed_tables = [table.strip() for table in tables_str.split(',')]
-                    break
+        explanation_agent = QueryExplanationAgent()
+        explanation = explanation_agent.run(prompt=prompt, query=modified_sql)
         
-        if confirmed_tables:
-            for message in history:
-                if message.get('sender') == 'user' and not message.get('message', '').startswith('Confirmed tables:'):
-                    original_prompt = message['message']
-                    break
+        new_context = {'last_query_sql': modified_sql, 'last_used_tables': tables}
+        return {"type": "sql_query", "sql": modified_sql, "explanation": explanation, "context": new_context}
 
-        return original_prompt, confirmed_tables
+    def _get_last_sql_from_history(self, history):
+        for message in reversed(history):
+            if message.get('isSql') is True:
+                return message.get('message')
+        return None
+
+    def _get_last_tables_from_history(self, history):
+        for message in reversed(history):
+            msg_text = message.get('message', '')
+            if message.get('sender') == 'user' and msg_text.startswith('Confirmed tables:'):
+                tables_str = msg_text.replace('Confirmed tables:', '').strip()
+                if tables_str:
+                    return [table.strip() for table in tables_str.split(',')]
+        return None
