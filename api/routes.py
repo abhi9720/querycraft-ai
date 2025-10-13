@@ -5,6 +5,7 @@ from flask import jsonify, request
 import json
 import os
 from dotenv import load_dotenv
+from google.api_core.exceptions import ResourceExhausted
 
 from agents.orchestrator_agent import OrchestratorAgent
 from database.factory import get_database_connector
@@ -20,14 +21,6 @@ db_name = os.getenv("DB_NAME")
 
 # Create a database connector instance
 connector = get_database_connector(db_type, db_name)
-
-# Set up logging to a file
-logging.basicConfig(
-    level=logging.ERROR,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    filename="error.log",
-    filemode="a",  # Append to the log file
-)
 
 @api_bp.route("/tables", methods=["GET"])
 def get_tables():
@@ -142,7 +135,9 @@ def generate():
         result = orchestrator.run(prompt, schema, tables, history)
 
         return jsonify(result)
-
+    except ResourceExhausted as e:
+        logging.error("API quota exceeded.")
+        return jsonify({"error": "API quota exceeded. Please check your plan and billing details."}), 429
     except Exception as e:
         logging.exception("An error occurred during query generation.")
         return (

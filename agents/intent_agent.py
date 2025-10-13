@@ -1,4 +1,6 @@
 from agents.base import BaseAgent
+from models.intent import Intent
+import json
 
 class IntentAgent(BaseAgent):
     def run(self, prompt, history=None):
@@ -17,25 +19,35 @@ class IntentAgent(BaseAgent):
 
         full_prompt = f"""Analyze the user's prompt and conversation history to classify the primary intent. The user is interacting with a database.
 
-**Possible Intents:**
+    **Possible Intents:**
 
--   **`sql_generation`**: The user wants to write a completely new SQL query. This is the default if no other intent fits.
--   **`query_modification`**: The user wants to modify the most recently generated SQL query. Keywords like "change", "modify", "add", "remove", "instead of", or follow-up questions like "who are they?", "what are their names?", "show me their emails" after a query about users, are strong signals for this intent.
--   **`query_explanation`**: The user is providing a SQL query and wants an explanation of what it does. The prompt itself will likely be a SQL query (e.g., starting with 'SELECT').
--   **`direct_answer`**: The user is asking a conversational question (e.g., "what is your name") that can be answered without database access.
+    -   **`sql_generation`**: The user wants to write a completely new SQL query. This is the default if no other intent fits.
+    -   **`query_modification`**: The user wants to modify the most recently generated SQL query. Keywords like "change", "modify", "add", "remove", "instead of", or follow-up questions like "who are they?", "what are their names?", "show me their emails" after a query about users, are strong signals for this intent.
+    -   **`query_explanation`**: The user is providing a SQL query and wants an explanation of what it does. The prompt itself will likely be a SQL query (e.g., starting with 'SELECT').
+    -   **`direct_answer`**: The user is asking a conversational question (e.g., "what is your name") that can be answered without database access.
 
-**Instructions:**
+    **Instructions:**
 
--   Carefully consider the user's prompt and the full conversation history.
--   A question asking for more details about the results of the immediately preceding query (like "who has these orders?" after a query that found orders) is a `query_modification`.
--   If the user's prompt *is* a SQL query, the intent is `query_explanation`.
--   Your output must be ONLY the single intent classification. Do not include any other text.
+    -   Carefully consider the user's prompt and the full conversation history.
+    -   A question asking for more details about the results of the immediately preceding query (like "who has these orders?" after a query that found orders) is a `query_modification`.
+    -   If the user's prompt includes a full SQL query **AND** additional modification instructions (e.g., “add”, “include”, “show”, “filter”, “sort”, “also”, “change”, “modify”, “remove”), classify as `query_modification`.
+    -   If the user's prompt is *only* a SQL query (no modification hints), classify as `query_explanation`.
+    -   Your output must be ONLY the single intent classification. Do not include any other text.
 
-**History:**
-{history_str}
+    **History:**
+    {history_str}
 
-**User Prompt:** {prompt}
+    **User Prompt:** {prompt}
 
-**Intent:**"""
-        response = self.model.generate_content(full_prompt)
-        return response.parts[0].text.strip()
+    **Intent:**"""
+        response = self.model.generate_content(
+            full_prompt,
+            generation_config={
+                "response_mime_type": "application/json",
+                "response_schema": Intent,
+            }
+        )
+        
+        # Parse the JSON response and return the intent string
+        intent_response = json.loads(response.parts[0].text)
+        return intent_response['intent']
