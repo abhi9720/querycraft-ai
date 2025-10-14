@@ -1,13 +1,63 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Flask App</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL AI Agent</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body class="bg-gray-100 text-gray-800">
-    <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-bold">{{ title }}</h1>
-        <p class="mt-2">Welcome to your Flask app with Tailwind CSS!</p>
+<body>
+    <div class="container">
+        <div class="sidebar" id="tables-sidebar">
+            <h3>Tables</h3>
+            <ul id="table-list">
+                <!-- Tables will be loaded here -->
+            </ul>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <h1>SQL AI Agent</h1>
+                    <span>ALPHA</span>
+                </div>
+            </div>
+
+            <div class="chat-history" id="chat-history">
+                <!-- Chat messages will appear here -->
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input">
+                    <input type="text" id="user-input" placeholder="Ask a question about your data...">
+                    <button id="send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sidebar" id="history-sidebar">
+            <button id="new-chat-btn">+ New Chat</button>
+            <h3>History</h3>
+            <ul id="history-list">
+                <!-- Chat history will be loaded here -->
+            </ul>
+        </div>
     </div>
+
+    <div id="table-preview-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2 id="modal-table-name"></h2>
+            <h3>Columns</h3>
+            <ul id="modal-columns-list"></ul>
+            <h3>Sample Data</h3>
+            <div id="modal-sample-data"></div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

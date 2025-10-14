@@ -142,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     addMessage(message.sender, message.message, message.isHtml, message.isSql);
                 }
             });
+            chatHistory.scrollTop = chatHistory.scrollHeight;
         }
     }
 
@@ -202,6 +203,31 @@ document.addEventListener('DOMContentLoaded', () => {
         messageElement.appendChild(content);
         chatHistory.appendChild(messageElement);
         chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function showTypingIndicator() {
+        const typingIndicator = document.createElement('div');
+        typingIndicator.classList.add('message', 'bot', 'typing-indicator');
+
+        const avatar = document.createElement('img');
+        avatar.classList.add('avatar');
+        avatar.src = 'https://img.icons8.com/fluency/48/000000/bot.png';
+
+        const content = document.createElement('div');
+        content.classList.add('content');
+        content.innerHTML = '<div class="typing-dots"><div></div><div></div><div></div></div>';
+
+        typingIndicator.appendChild(avatar);
+        typingIndicator.appendChild(content);
+        chatHistory.appendChild(typingIndicator);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+        const typingIndicator = document.querySelector('.typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
     }
 
     function addConfirmation(suggestedTables, isReloading = false, isCompleted = false) {
@@ -317,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
         botMessage.appendChild(avatar);
         botMessage.appendChild(confirmationContainer);
         chatHistory.appendChild(botMessage);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
 
         renderTableList();
         if (!isReloading) {
@@ -349,6 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function sendMessage(prompt, tables = null) {
+        showTypingIndicator();
         try {
             const chats = JSON.parse(localStorage.getItem('chats')) || {};
             const currentChat = chats[currentChatId];
@@ -365,6 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(body)
             });
 
+            hideTypingIndicator();
             const data = await response.json();
 
             if (response.ok) {
@@ -394,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 conversationState = {}; // Reset state on error
             }
         } catch (error) {
+            hideTypingIndicator();
             console.error('Error:', error);
             addMessage('bot', 'Sorry, something went wrong. Please try again.');
             saveMessage('bot', 'Sorry, something went wrong. Please try again.');
