@@ -66,5 +66,4 @@ This project is just the beginning. Our future plans include:
 
 ## 🤝 Contributing
 
-This is an open-source project, and we welcome contributions from the community! Whether it\'s a bug fix, a new feature, or improved documentation, your help is valued. Please see our `CONTRIBUTING.md` file for guidelines.
-
+This is an open-source project, and we welcome contributions from the community! Whether it\'s a bug fix, a new feature, or improved documentation, your help is valued.
