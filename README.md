@@ -8,6 +8,8 @@ It bridges the gap between complex relational schemas and human-friendly natural
 
 > Vision: Democratize data access — make querying as simple as having a conversation.
 
+## 🔗 Live Demo: https://codewithabhi.pythonanywhere.com/
+
 ## 🧩 Key Highlights
 - Multi-Agent Orchestration: Modular agentic pipeline — intent detection, table identification, column pruning, SQL generation, and explanation — each powered by structured LLM calls.
 - Context-Aware Querying: Maintains chat history and dynamically enhances prompts to handle follow-ups and modifications intelligently.
