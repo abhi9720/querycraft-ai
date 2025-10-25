@@ -1,3 +1,4 @@
+
 document.addEventListener('DOMContentLoaded', () => {
     const chatHistory = document.getElementById('chat-history');
     const userInput = document.getElementById('user-input');
@@ -6,14 +7,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const historyList = document.getElementById('history-list');
     const tableList = document.getElementById('table-list');
     const modal = document.getElementById('table-preview-modal');
-    const closeBtn = document.querySelector('.close-btn');
+    const addTableModal = document.getElementById('add-table-modal');
+    const addTableBtn = document.getElementById('add-table-btn');
+    const addTableForm = document.getElementById('add-table-form');
+    const closeButtons = document.querySelectorAll('.close-btn');
     const modalTableName = document.getElementById('modal-table-name');
     const modalColumnsList = document.getElementById('modal-columns-list');
     const modalSampleData = document.getElementById('modal-sample-data');
+    const addColumnBtn = document.getElementById('add-column-btn');
+    const columnsContainer = document.getElementById('columns-container');
+    const cancelBtn = document.querySelector('.cancel-btn');
 
     let conversationState = { prompt: '' };
     let currentChatId = null;
     let allTables = [];
+
+    // Rebuild schema graph
+    async function rebuildSchemaGraph() {
+        try {
+            await fetch('/api/rebuild-graph', { method: 'POST' });
+        } catch (error) {
+            console.error('Error rebuilding schema graph:', error);
+        }
+    }
 
     // Fetch and render tables
     async function loadTables() {
@@ -24,6 +40,30 @@ document.addEventListener('DOMContentLoaded', () => {
             tables.forEach(table => {
                 const listItem = document.createElement('li');
                 listItem.textContent = table;
+                
+                const deleteIcon = document.createElement('i');
+                deleteIcon.classList.add('fas', 'fa-trash-alt', 'delete-table-icon');
+                deleteIcon.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const confirmation = confirm(`Are you sure you want to delete the table "${table}"?`);
+                    if (confirmation) {
+                        try {
+                            const response = await fetch(`/api/table/${table}`, { method: 'DELETE' });
+                            if (response.ok) {
+                                await loadTables();
+                                await rebuildSchemaGraph();
+                            } else {
+                                const data = await response.json();
+                                throw new Error(data.error || 'Failed to delete table.');
+                            }
+                        } catch (error) {
+                            console.error('Error deleting table:', error);
+                            alert(`Error: ${error.message}`);
+                        }
+                    }
+                });
+
+                listItem.appendChild(deleteIcon);
                 listItem.addEventListener('click', () => {
                     openTablePreview(table);
                 });
@@ -92,15 +132,152 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Close modal
-    closeBtn.onclick = () => {
-        modal.style.display = 'none';
-    };
+    closeButtons.forEach(btn => {
+        btn.onclick = () => {
+            modal.style.display = 'none';
+            addTableModal.style.display = 'none';
+        };
+    });
 
     window.onclick = (event) => {
         if (event.target == modal) {
             modal.style.display = 'none';
         }
+        if (event.target == addTableModal) {
+            addTableModal.style.display = 'none';
+        }
     };
+
+    // Open "Add Table" modal
+    addTableBtn.addEventListener('click', () => {
+        addTableModal.style.display = 'block';
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        addTableModal.style.display = 'none';
+    });
+
+    // Add new column to the form
+    addColumnBtn.addEventListener('click', () => {
+        const newColumnRow = document.createElement('div');
+        newColumnRow.classList.add('column-row');
+        newColumnRow.innerHTML = `
+            <div class="form-group">
+                <input type="text" name="column_name" placeholder="name" required>
+            </div>
+            <div class="form-group">
+                <select name="column_type" required>
+                    <option value="VARCHAR(255)" selected>VARCHAR(255)</option>
+                    <option value="INT">INT</option>
+                    <option value="TEXT">TEXT</option>
+                    <option value="DATE">DATE</option>
+                    <option value="DATETIME">DATETIME</option>
+                    <option value="BOOLEAN">BOOLEAN</option>
+                    <option value="DECIMAL(10, 2)">DECIMAL(10, 2)</option>
+                    <option value="SERIAL">SERIAL</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="text" name="column_default" placeholder="null">
+            </div>
+            <div class="form-group">
+                <select name="column_constraints">
+                    <option value="">None</option>
+                    <option value="PRIMARY KEY">PRIMARY KEY</option>
+                    <option value="UNIQUE">UNIQUE</option>
+                    <option value="NOT NULL">NOT NULL</option>
+                </select>
+            </div>
+        `;
+        columnsContainer.appendChild(newColumnRow);
+    });
+
+    // Handle "Add Table" form submission
+    addTableForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const tableName = document.getElementById('new-table-name').value.trim();
+        const columnRows = columnsContainer.querySelectorAll('.column-row');
+        
+        let columns = [];
+        columnRows.forEach(row => {
+            const name = row.querySelector('input[name="column_name"]').value.trim();
+            const type = row.querySelector('select[name="column_type"]').value;
+            const defaultVal = row.querySelector('input[name="column_default"]').value.trim();
+            const constraints = row.querySelector('select[name="column_constraints"]').value;
+            
+            if(name && type) {
+                let columnDef = `${name} ${type}`;
+                if (defaultVal && defaultVal.toLowerCase() !== 'no default') {
+                    columnDef += ` DEFAULT ${defaultVal}`;
+                }
+                if (constraints) {
+                    columnDef += ` ${constraints}`;
+                }
+                columns.push(columnDef);
+            }
+        });
+
+        const columnsStr = columns.join(', ');
+
+        if (tableName && columnsStr) {
+            try {
+                const response = await fetch('/api/tables', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tableName, columns: columnsStr }),
+                });
+
+                if (response.ok) {
+                    addTableModal.style.display = 'none';
+                    addTableForm.reset();
+                    // Reset columns to the initial state
+                    columnsContainer.innerHTML = `
+                        <div class="column-row">
+                            <div class="form-group">
+                                <label>column name</label>
+                                <input type="text" name="column_name" placeholder="id" required>
+                            </div>
+                            <div class="form-group">
+                                <label>type</label>
+                                <select name="column_type" required>
+                                    <option value="SERIAL" selected>SERIAL</option>
+                                    <option value="VARCHAR(255)">VARCHAR(255)</option>
+                                    <option value="INT">INT</option>
+                                    <option value="TEXT">TEXT</option>
+                                    <option value="DATE">DATE</option>
+                                    <option value="DATETIME">DATETIME</option>
+                                    <option value="BOOLEAN">BOOLEAN</option>
+                                    <option value="DECIMAL(10, 2)">DECIMAL(10, 2)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>default</label>
+                                <input type="text" name="column_default" placeholder="no default">
+                            </div>
+                            <div class="form-group">
+                                <label>constraints</label>
+                                <select name="column_constraints">
+                                    <option value="PRIMARY KEY" selected>PRIMARY KEY</option>
+                                    <option value="">None</option>
+                                    <option value="UNIQUE">UNIQUE</option>
+                                    <option value="NOT NULL">NOT NULL</option>
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                    await loadTables();
+                    await rebuildSchemaGraph();
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Failed to add table.');
+                }
+            } catch (error) {
+                console.error('Error adding table:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+    });
+
 
     // Load chat history from local storage
     function loadChatHistory() {
@@ -115,9 +292,32 @@ document.addEventListener('DOMContentLoaded', () => {
             if (words.length > 5) {
                 displayTitle = words.slice(0, 5).join(' ') + '...';
             }
-            listItem.textContent = displayTitle;
-            listItem.title = chat.title; // Show full title on hover
+            
+            const titleSpan = document.createElement('span');
+            titleSpan.textContent = displayTitle;
+            titleSpan.title = chat.title; // Show full title on hover
+            listItem.appendChild(titleSpan);
 
+            const iconsDiv = document.createElement('div');
+            iconsDiv.classList.add('history-icons');
+
+            const renameIcon = document.createElement('i');
+            renameIcon.classList.add('fas', 'fa-pencil-alt');
+            renameIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                renameChat(chatId);
+            });
+            iconsDiv.appendChild(renameIcon);
+
+            const deleteIcon = document.createElement('i');
+            deleteIcon.classList.add('fas', 'fa-trash-alt');
+            deleteIcon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteChat(chatId);
+            });
+            iconsDiv.appendChild(deleteIcon);
+
+            listItem.appendChild(iconsDiv);
             listItem.dataset.chatId = chatId;
             listItem.addEventListener('click', () => {
                 loadChat(chatId);
@@ -125,6 +325,34 @@ document.addEventListener('DOMContentLoaded', () => {
             historyList.appendChild(listItem);
         }
     }
+
+    function renameChat(chatId) {
+        const newName = prompt("Enter new chat name:");
+        if (newName) {
+            const chats = JSON.parse(localStorage.getItem('chats')) || {};
+            if (chats[chatId]) {
+                chats[chatId].title = newName;
+                localStorage.setItem('chats', JSON.stringify(chats));
+                loadChatHistory();
+            }
+        }
+    }
+
+    function deleteChat(chatId) {
+        const confirmation = confirm("Are you sure you want to delete this chat?");
+        if (confirmation) {
+            const chats = JSON.parse(localStorage.getItem('chats')) || {};
+            delete chats[chatId];
+            localStorage.setItem('chats', JSON.stringify(chats));
+            if (currentChatId === chatId) {
+                currentChatId = null;
+                chatHistory.innerHTML = '';
+                 addMessage('bot', 'Hey! I\'m your personal SQL agent. Ask me a question about your data, and I\'ll help you build the right query to answer it.');
+            }
+            loadChatHistory();
+        }
+    }
+
 
     // Load a specific chat
     function loadChat(chatId) {

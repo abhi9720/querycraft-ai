@@ -25,7 +25,7 @@ class OrchestratorAgent(BaseAgent):
         
         self.logger = logging.getLogger(__name__)
 
-    def run(self, prompt, schema, tables=None, history=None):
+    def run(self, prompt, schema, schema_graph, tables=None, history=None):
         self.logger.info(f"OrchestratorAgent starting with prompt: '{prompt}', tables: {tables}, history: {history is not None}")
         
         if isinstance(history, dict):
@@ -40,10 +40,17 @@ class OrchestratorAgent(BaseAgent):
         enhanced_prompt = self.prompt_enhancer_agent.run(prompt, history)
         self.logger.info(f"PromptEnhancerAgent returned: '{enhanced_prompt}'")
 
-        # If tables are confirmed by the user, we proceed with the rest of the SQL generation pipeline.
+        # If tables are confirmed by the user, we can proceed.
+        # This can be for initial generation or for modification.
         if tables:
-            self.logger.info("Tables are confirmed. Running SQL generation pipeline.")
-            return self._run_sql_generation_pipeline(enhanced_prompt, schema, tables, original_prompt=prompt)
+            last_sql_query = context.get('last_query_sql') or self._get_last_sql_from_history(messages)
+            # If there's a last query, it's a modification. Otherwise, it's a new query.
+            if last_sql_query:
+                self.logger.info("Tables are confirmed for modification. Running query modification pipeline.")
+                return self._run_query_modification_pipeline(enhanced_prompt, schema, last_sql_query, tables)
+            else:
+                self.logger.info("Tables are confirmed for new query. Running SQL generation pipeline.")
+                return self._run_sql_generation_pipeline(enhanced_prompt, schema, tables, original_prompt=prompt)
 
         # Step 2: Determine intent using the enhanced prompt
         self.logger.info(f"Calling IntentAgent with prompt: '{enhanced_prompt}'")
@@ -57,6 +64,29 @@ class OrchestratorAgent(BaseAgent):
             last_used_tables = context.get('last_used_tables') or self._get_last_tables_from_history(messages)
             self.logger.info(f"Retrieved from history: last_sql_query='{last_sql_query}', last_used_tables={last_used_tables}")
 
+            if last_sql_query and last_used_tables:
+                # Re-identify tables based on the new prompt to see if new tables are needed.
+                self.logger.info(f"Re-identifying tables for query modification with prompt: '{enhanced_prompt}'")
+                table_identification_agent = TableIdentificationAgent()
+                identified_tables_str = table_identification_agent.run(enhanced_prompt, schema)
+                self.logger.info(f"TableIdentificationAgent returned: '{identified_tables_str}'")
+                newly_identified_tables = [t.strip() for t in identified_tables_str.split(",") if t.strip()] if identified_tables_str else []
+
+                # Combine old and new tables, ensuring no duplicates
+                combined_tables = sorted(list(set(last_used_tables + newly_identified_tables)))
+
+                # If the tables are different, we need to ask for confirmation again.
+                if set(combined_tables) != set(last_used_tables):
+                    self.logger.info(f"New tables identified for modification. Old: {last_used_tables}, New: {combined_tables}. Asking for confirmation.")
+                    all_db_tables = re.findall(r"Table `([^`]*)`", schema)
+                    result = {"type": "confirm_tables", "tables": combined_tables, "all_tables": all_db_tables}
+                    self.logger.info(f"Returning table confirmation request: {result}")
+                    return result
+                
+                # If tables are the same, proceed with modification.
+                self.logger.info("No new tables needed. Running query modification pipeline.")
+                return self._run_query_modification_pipeline(enhanced_prompt, schema, last_sql_query, last_used_tables)
+
             if not last_sql_query and enhanced_prompt.strip().lower().startswith('select'):
                 self.logger.info("No last query in history, but prompt looks like SQL. Identifying tables from prompt.")
                 table_agent = TableIdentificationAgent()
@@ -66,10 +96,6 @@ class OrchestratorAgent(BaseAgent):
                 identified_tables = [t.strip() for t in identified_tables_str.split(",") if t.strip()] if identified_tables_str else []
                 return self._run_query_modification_pipeline(enhanced_prompt, schema, enhanced_prompt, identified_tables)
 
-            if last_sql_query and last_used_tables:
-                self.logger.info("Found last query in history. Running query modification pipeline.")
-                return self._run_query_modification_pipeline(enhanced_prompt, schema, last_sql_query, last_used_tables)
-            
             self.logger.info("No query to modify found. Falling back to 'sql_generation'.")
             intent = 'sql_generation'
 
@@ -79,7 +105,7 @@ class OrchestratorAgent(BaseAgent):
             table_identification_agent = pipeline[0]()
             all_db_tables = re.findall(r"Table `([^`]*)`", schema)
             self.logger.info(f"Calling TableIdentificationAgent with prompt: '{enhanced_prompt}'")
-            identified_tables_str = table_identification_agent.run(enhanced_prompt, schema)
+            identified_tables_str = table_identification_agent.run(enhanced_prompt, schema, schema_graph)
             self.logger.info(f"TableIdentificationAgent returned: '{identified_tables_str}'")
             identified_tables = [t.strip() for t in identified_tables_str.split(",") if t.strip()] if identified_tables_str else []
             result = {"type": "confirm_tables", "tables": identified_tables, "all_tables": all_db_tables}
@@ -152,7 +178,7 @@ class OrchestratorAgent(BaseAgent):
         explanation_agent = pipeline[2]()
         
         self.logger.info(f"Calling ColumnPruneAgent with prompt: '{prompt}' and tables: {tables}")
-        pruned_schema = column_prune_agent.run(prompt, schema, tables)
+        pruned_schema = column_prune_agent.run(f"Original SQL: {original_sql}\nNew user prompt: {prompt}", schema, tables)
         self.logger.info(f"ColumnPruneAgent returned pruned schema: '{pruned_schema}'")
         
         self.logger.info(f"Calling SQLAgent's modify_sql with original_sql: '{original_sql}' and prompt: '{prompt}'")

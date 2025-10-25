@@ -13,6 +13,7 @@
     <div class="container">
         <div class="sidebar" id="tables-sidebar">
             <h3>TABLES</h3>
+            <button id="add-table-btn">+ Add Table</button>
             <ul id="table-list">
             </ul>
         </div>
@@ -49,6 +50,58 @@
             <ul id="modal-columns-list"></ul>
             <h4>Sample Data</h4>
             <div id="modal-sample-data"></div>
+        </div>
+    </div>
+
+    <div id="add-table-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3>Create table</h3>
+            <form id="add-table-form">
+                <div class="form-group">
+                    <label for="new-table-name">table name</label>
+                    <input type="text" id="new-table-name" placeholder="my-table" required>
+                </div>
+                <div id="columns-container">
+                    <div class="column-row">
+                        <div class="form-group">
+                            <label>column name</label>
+                            <input type="text" name="column_name" placeholder="id" required>
+                        </div>
+                        <div class="form-group">
+                            <label>type</label>
+                            <select name="column_type" required>
+                                <option value="SERIAL" selected>SERIAL</option>
+                                <option value="VARCHAR(255)">VARCHAR(255)</option>
+                                <option value="INT">INT</option>
+                                <option value="TEXT">TEXT</option>
+                                <option value="DATE">DATE</option>
+                                <option value="DATETIME">DATETIME</option>
+                                <option value="BOOLEAN">BOOLEAN</option>
+                                <option value="DECIMAL(10, 2)">DECIMAL(10, 2)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>default</label>
+                            <input type="text" name="column_default" placeholder="no default">
+                        </div>
+                        <div class="form-group">
+                            <label>constraints</label>
+                            <select name="column_constraints">
+                                <option value="PRIMARY KEY" selected>PRIMARY KEY</option>
+                                <option value="">None</option>
+                                <option value="UNIQUE">UNIQUE</option>
+                                <option value="NOT NULL">NOT NULL</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="add-column-btn">Add column</button>
+                <div class="form-actions">
+                    <button type="button" class="cancel-btn">Cancel</button>
+                    <button type="submit">Create</button>
+                </div>
+            </form>
         </div>
     </div>
 

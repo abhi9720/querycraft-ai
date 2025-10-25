@@ -4,13 +4,14 @@ from models.pruned_schema import PrunedSchema
 
 class ColumnPruneAgent(BaseAgent):
     def run(self, prompt, schema, tables):
-        full_prompt = f"""Given the following SQL schema, a user's prompt, and a list of relevant tables, prune the schema to include ONLY the necessary columns from those tables.
+        full_prompt = f"""Given the following SQL schema, a user's prompt, and a list of relevant tables, identify the necessary columns from those tables to answer the user's prompt.
 
 **Instructions:**
 1.  For each table in the provided list of relevant tables, identify the columns that are essential to answer the user's prompt.
-2.  ALWAYS include all primary and foreign key columns for the selected tables.
-3.  Only include other columns if they are directly mentioned or strongly implied in the user's prompt.
-4.  Your output must be a JSON object that conforms to the following Pydantic schema:
+2.  Your output MUST NOT be a DDL statement.
+3.  ALWAYS include all primary and foreign key columns for the selected tables.
+4.  Only include other columns if they are directly mentioned or strongly implied in the user's prompt.
+5.  Your output must be a JSON object that conforms to the following Pydantic schema:
 
     ```json
     {{
@@ -23,7 +24,7 @@ class ColumnPruneAgent(BaseAgent):
     }}
     ```
 
-5.  Do not include any other text, explanation, or markdown. The output must be ONLY the JSON object.
+6.  Do not include any other text, explanation, or markdown. The output must be ONLY the JSON object.
 
 **Original Schema:**
 {schema}

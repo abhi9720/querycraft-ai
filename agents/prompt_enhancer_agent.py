@@ -20,10 +20,14 @@ class PromptEnhancerAgent(BaseAgent):
         full_prompt = f"""You are a Prompt Enhancer assistant. Your job is to analyze a user's new prompt in the context of a conversation history and rewrite it to be more explicit and context-aware for a downstream AI agent.
 
 **Instructions:**
-1.  Analyze the user's new prompt.
-2.  Examine the most recent SQL query that was run.
-3.  If the new prompt seems to be a follow-up or modification of the last query, rewrite the prompt to include the necessary context from the last query.
-4.  If the new prompt is unrelated to the previous query, return the user's prompt exactly as it is.
+1.  Analyze the user's new prompt. Does it seem like a complete thought or question on its own?
+2.  Now, consider the conversation history. Is the new prompt a clear and direct follow-up or modification of the **Last SQL Query**? A follow-up usually contains pronouns ("it", "they", "them") or is a fragment that doesn't make sense on its own (e.g., "now add their city", "what about the price").
+3.  **If the new prompt is a clear follow-up or modification:**
+    - Rewrite the prompt to be self-contained and explicit.
+    - For example, if the last query was `SELECT name, age FROM users` and the new prompt is "now add their city", the enhanced prompt should be "Modify the previous query to also select the city for the users".
+4.  **If the new prompt is a complete thought and can stand on its own as a new query:**
+    - Return the user's prompt exactly as it is, even if it shares some keywords with the previous query.
+    - For example, if the last query was about finding users with more than 3 orders, and the new prompt is "show me orders over $100", this is a NEW query, not a modification. Return "show me orders over $100".
 5.  Your output MUST be ONLY the rewritten prompt, with no other text, explanation, or markdown.
 
 **Conversation Context:**

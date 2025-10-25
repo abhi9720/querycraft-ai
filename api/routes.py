@@ -9,6 +9,8 @@ from google.api_core.exceptions import ResourceExhausted
 
 from agents.orchestrator_agent import OrchestratorAgent
 from database.factory import get_database_connector
+from helpers.schema_graph import SchemaGraph
+from build_schema_graph import build_and_save_schema_graph
 
 from . import api_bp
 
@@ -50,7 +52,7 @@ def get_table_schema(table_name):
         columns_info = cursor.fetchall()
         columns = []
         for col in columns_info:
-            columns.append({"name": col[1], "type": col[2]})
+            columns.append({"name": col[0], "type": col[1]})
 
         # Fetch sample data
         cursor.execute(f"SELECT * FROM {table_name} LIMIT 5")
@@ -82,6 +84,58 @@ def get_table_schema(table_name):
         if conn:
             connector.close_connection(conn)
 
+@api_bp.route("/tables", methods=["POST"])
+def create_table():
+    conn = None
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Invalid JSON"}), 400
+
+        table_name = data.get("tableName")
+        columns = data.get("columns")
+
+        if not table_name or not columns:
+            return jsonify({"error": "Table name and columns are required"}), 400
+
+        conn = connector.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(connector.create_table(table_name, columns))
+        conn.commit()
+
+        return jsonify({"message": f"Table {table_name} created successfully"})
+    except Exception as e:
+        logging.exception("An error occurred while creating the table.")
+        return jsonify({"error": "An internal server error occurred.", "description": str(e)}), 500
+    finally:
+        if conn:
+            connector.close_connection(conn)
+
+@api_bp.route("/table/<table_name>", methods=["DELETE"])
+def delete_table(table_name):
+    conn = None
+    try:
+        conn = connector.get_connection()
+        cursor = conn.cursor()
+        cursor.execute(connector.delete_table(table_name))
+        conn.commit()
+
+        return jsonify({"message": f"Table {table_name} deleted successfully"})
+    except Exception as e:
+        logging.exception("An error occurred while deleting the table.")
+        return jsonify({"error": "An internal server error occurred.", "description": str(e)}), 500
+    finally:
+        if conn:
+            connector.close_connection(conn)
+
+@api_bp.route("/rebuild-graph", methods=["POST"])
+def rebuild_graph():
+    try:
+        build_and_save_schema_graph(connector)
+        return jsonify({"message": "Schema graph rebuilt successfully"})
+    except Exception as e:
+        logging.exception("An error occurred while rebuilding the schema graph.")
+        return jsonify({"error": "An internal server error occurred.", "description": str(e)}), 500
 
 @api_bp.route("/generate", methods=["POST"])
 def generate():
@@ -104,6 +158,8 @@ def generate():
         cursor.execute(connector.get_tables_query())
         all_tables = [row[0] for row in cursor.fetchall()]
 
+        schema_graph = SchemaGraph.load("schema_graph.json")
+
         # Load metadata from schema.json
         with open("schema.json") as f:
             schema_json = json.load(f)
@@ -124,15 +180,15 @@ def generate():
             column_metadata = {col["name"]: col.get("description", "") for col in table_metadata.get("columns", [])}
 
             for col in columns_info:
-                col_name = col[1]
-                col_type = col[2]
+                col_name = col[0]
+                col_type = col[1]
                 col_description = column_metadata.get(col_name, "")
                 schema += f"  `{col_name}`: {col_type} ({col_description})\n"
             schema += "\n"
 
         # Orchestrator Agent
         orchestrator = OrchestratorAgent()
-        result = orchestrator.run(prompt, schema, tables, history)
+        result = orchestrator.run(prompt, schema,schema_graph, tables, history)
 
         return jsonify(result)
     except ResourceExhausted as e:

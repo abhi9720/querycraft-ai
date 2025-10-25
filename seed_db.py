@@ -1,8 +1,5 @@
-
 import json
 import sqlite3
-import datetime
-import random
 
 def create_tables():
     with open('schema.json', 'r') as f:
@@ -11,11 +8,24 @@ def create_tables():
     conn = sqlite3.connect('Chinook.db')
     cursor = conn.cursor()
 
+    # Enable foreign key constraints
+    cursor.execute("PRAGMA foreign_keys = ON;")
+
     for table_name, table_data in schema.items():
         columns = table_data['columns']
         column_definitions = []
         for column in columns:
-            column_definitions.append(f"{column['name']} {column['type']}")
+            col_def = f"{column['name']} {column['type']}"
+            # Optionally mark 'id' columns as PRIMARY KEY
+            if column['name'] == 'id':
+                col_def += " PRIMARY KEY"
+            column_definitions.append(col_def)
+
+        # Add foreign key constraints for orders table
+        if table_name == 'orders':
+            column_definitions.append("FOREIGN KEY(user_id) REFERENCES users(id)")
+            column_definitions.append("FOREIGN KEY(product_id) REFERENCES products(id)")
+
         create_table_sql = f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join(column_definitions)});"
         cursor.execute(create_table_sql)
 
@@ -26,11 +36,9 @@ def clear_db():
     conn = sqlite3.connect('Chinook.db')
     cursor = conn.cursor()
 
-    # Get all tables
+    # Drop all tables
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     tables = [row[0] for row in cursor.fetchall()]
-
-    # Drop all tables
     for table in tables:
         cursor.execute(f"DROP TABLE IF EXISTS {table}")
 
@@ -43,9 +51,9 @@ def populate_tables():
 
     # Populate users table
     users_data = [
-        (1, 'Alice', 'alice@example.com',),
-        (2, 'Bob', 'bob@example.com',),
-        (3, 'Charlie', 'charlie@example.com',)
+        (1, 'Alice', 'alice@example.com'),
+        (2, 'Bob', 'bob@example.com'),
+        (3, 'Charlie', 'charlie@example.com')
     ]
     cursor.executemany("INSERT INTO users (id, name, email) VALUES (?, ?, ?)", users_data)
 

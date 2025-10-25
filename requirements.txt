@@ -1,4 +1,6 @@
 flask
-google-generativeai
+google-generativeai==0.8.5
 python-dotenv
 mysql-connector-python
+
+sqlglot
