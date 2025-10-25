@@ -1,4 +1,5 @@
-# 🧠 Product Document: QueryCraftAI
+# Product Document: QueryCraftAI
+[![Live Demo](https://img.shields.io/badge/🌐%20Try%20QueryCraftAI%20Now-Click%20Here-brightgreen?style=for-the-badge)](https://codewithabhi.pythonanywhere.com/)
 
 ## 🚀 QueryCraftAI — Conversational Intelligence for Databases
 
@@ -7,6 +8,8 @@ QueryCraftAI is an open-source, multi-agent AI system that turns plain English q
 It bridges the gap between complex relational schemas and human-friendly natural language, enabling developers, analysts, and business users to explore data conversationally without writing a single line of SQL.
 
 > Vision: Democratize data access — make querying as simple as having a conversation.
+
+
 
 ## 🧩 Key Highlights
 - Multi-Agent Orchestration: Modular agentic pipeline — intent detection, table identification, column pruning, SQL generation, and explanation — each powered by structured LLM calls.
@@ -66,5 +69,4 @@ This project is just the beginning. Our future plans include:
 
 ## 🤝 Contributing
 
-This is an open-source project, and we welcome contributions from the community! Whether it\'s a bug fix, a new feature, or improved documentation, your help is valued. Please see our `CONTRIBUTING.md` file for guidelines.
-
+This is an open-source project, and we welcome contributions from the community! Whether it\'s a bug fix, a new feature, or improved documentation, your help is valued.
