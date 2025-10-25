@@ -1,4 +1,5 @@
-# 🧠 Product Document: QueryCraftAI
+# Product Document: QueryCraftAI
+[![Live Demo](https://img.shields.io/badge/🌐%20Try%20QueryCraftAI%20Now-Click%20Here-brightgreen?style=for-the-badge)](https://codewithabhi.pythonanywhere.com/)
 
 ## 🚀 QueryCraftAI — Conversational Intelligence for Databases
 
@@ -8,7 +9,7 @@ It bridges the gap between complex relational schemas and human-friendly natural
 
 > Vision: Democratize data access — make querying as simple as having a conversation.
 
-## 🔗 Live Demo: https://codewithabhi.pythonanywhere.com/
+
 
 ## 🧩 Key Highlights
 - Multi-Agent Orchestration: Modular agentic pipeline — intent detection, table identification, column pruning, SQL generation, and explanation — each powered by structured LLM calls.
