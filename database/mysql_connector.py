@@ -10,6 +10,10 @@ class MySqlConnector:
 
         parsed_url = urlparse(db_url)
         
+        # Fallback to the path from the URL if db_name is not provided
+        if not db_name and parsed_url.path:
+            db_name = parsed_url.path.lstrip('/')
+
         self.config = {
             'user': parsed_url.username,
             'password': parsed_url.password,

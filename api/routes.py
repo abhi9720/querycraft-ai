@@ -100,6 +100,13 @@ def create_table():
 
         conn = connector.get_connection()
         cursor = conn.cursor()
+
+        # Check if table already exists
+        cursor.execute(connector.get_tables_query())
+        tables = [row[0] for row in cursor.fetchall()]
+        if table_name in tables:
+            return jsonify({"error": f"Table '{table_name}' already exists"}), 409
+
         cursor.execute(connector.create_table(table_name, columns))
         conn.commit()
 
