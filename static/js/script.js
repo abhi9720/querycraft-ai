@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     const chatHistory = document.getElementById('chat-history');
     const userInput = document.getElementById('user-input');
@@ -10,19 +9,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const addTableModal = document.getElementById('add-table-modal');
     const addTableBtn = document.getElementById('add-table-btn');
     const addTableForm = document.getElementById('add-table-form');
+    const addTableSqlForm = document.getElementById('add-table-sql-form');
     const closeButtons = document.querySelectorAll('.close-btn');
     const modalTableName = document.getElementById('modal-table-name');
     const modalColumnsList = document.getElementById('modal-columns-list');
     const modalSampleData = document.getElementById('modal-sample-data');
     const addColumnBtn = document.getElementById('add-column-btn');
     const columnsContainer = document.getElementById('columns-container');
-    const cancelBtn = document.querySelector('.cancel-btn');
+    const cancelBtns = document.querySelectorAll('.cancel-btn');
+    const tabLinks = document.querySelectorAll('.tab-link');
+    const printChatBtn = document.getElementById('print-chat-btn');
 
     let conversationState = { prompt: '' };
     let currentChatId = null;
     let allTables = [];
 
-    // Rebuild schema graph
     async function rebuildSchemaGraph() {
         try {
             await fetch('/api/rebuild-graph', { method: 'POST' });
@@ -31,11 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Fetch and render tables
     async function loadTables() {
         try {
             const response = await fetch('/api/tables');
             const tables = await response.json();
+            allTables = tables;
             tableList.innerHTML = '';
             tables.forEach(table => {
                 const listItem = document.createElement('li');
@@ -74,7 +75,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Open table preview modal
     async function openTablePreview(tableName) {
         try {
             const response = await fetch(`/api/table/${tableName}`);
@@ -131,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Close modal
     closeButtons.forEach(btn => {
         btn.onclick = () => {
             modal.style.display = 'none';
@@ -148,17 +147,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Open "Add Table" modal
     addTableBtn.addEventListener('click', () => {
         addTableModal.style.display = 'block';
     });
 
-    cancelBtn.addEventListener('click', () => {
-        addTableModal.style.display = 'none';
+    cancelBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            addTableModal.style.display = 'none';
+        });
     });
 
-    // Add new column to the form
-    addColumnBtn.addEventListener('click', () => {
+    tabLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            const tabId = link.dataset.tab;
+
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+
+            tabLinks.forEach(innerLink => {
+                innerLink.classList.remove('active');
+            });
+            link.classList.add('active');
+        });
+    });
+
+    function createColumnRow() {
         const newColumnRow = document.createElement('div');
         newColumnRow.classList.add('column-row');
         newColumnRow.innerHTML = `
@@ -186,19 +201,70 @@ document.addEventListener('DOMContentLoaded', () => {
                     <option value="PRIMARY KEY">PRIMARY KEY</option>
                     <option value="UNIQUE">UNIQUE</option>
                     <option value="NOT NULL">NOT NULL</option>
+                    <option value="FOREIGN KEY">FOREIGN KEY</option>
                 </select>
+            </div>
+            <div class="form-group foreign-key-details" style="display: none;">
+                <select name="foreign_key_table"></select>
+                <select name="foreign_key_column"></select>
             </div>
         `;
         columnsContainer.appendChild(newColumnRow);
-    });
+        initializeForeignKeyFunctionality(newColumnRow);
+    }
 
-    // Handle "Add Table" form submission
+    async function initializeForeignKeyFunctionality(row) {
+        const constraintSelect = row.querySelector('select[name="column_constraints"]');
+        const foreignKeyDetails = row.querySelector('.foreign-key-details');
+        const fkTableSelect = row.querySelector('select[name="foreign_key_table"]');
+        const fkColumnSelect = row.querySelector('select[name="foreign_key_column"]');
+
+        fkTableSelect.innerHTML = '<option value="">Select table</option>';
+        allTables.forEach(table => {
+            const option = document.createElement('option');
+            option.value = table;
+            option.textContent = table;
+            fkTableSelect.appendChild(option);
+        });
+
+        constraintSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'FOREIGN KEY') {
+                foreignKeyDetails.style.display = 'contents';
+            } else {
+                foreignKeyDetails.style.display = 'none';
+            }
+        });
+
+        fkTableSelect.addEventListener('change', async (e) => {
+            const selectedTable = e.target.value;
+            fkColumnSelect.innerHTML = '<option value="">Select column</option>';
+            if (selectedTable) {
+                try {
+                    const response = await fetch(`/api/table/${selectedTable}/columns`);
+                    const columns = await response.json();
+                    columns.forEach(column => {
+                        const option = document.createElement('option');
+                        option.value = column;
+                        option.textContent = column;
+                        fkColumnSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error('Error fetching columns:', error);
+                }
+            }
+        });
+    }
+
+    addColumnBtn.addEventListener('click', createColumnRow);
+
     addTableForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const tableName = document.getElementById('new-table-name').value.trim();
         const columnRows = columnsContainer.querySelectorAll('.column-row');
         
         let columns = [];
+        let foreignKeys = [];
+
         columnRows.forEach(row => {
             const name = row.querySelector('input[name="column_name"]').value.trim();
             const type = row.querySelector('select[name="column_type"]').value;
@@ -210,61 +276,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (defaultVal && defaultVal.toLowerCase() !== 'no default') {
                     columnDef += ` DEFAULT ${defaultVal}`;
                 }
-                if (constraints) {
+                if (constraints && constraints !== 'FOREIGN KEY') {
                     columnDef += ` ${constraints}`;
                 }
                 columns.push(columnDef);
+
+                if (constraints === 'FOREIGN KEY') {
+                    const fkTable = row.querySelector('select[name="foreign_key_table"]').value;
+                    const fkColumn = row.querySelector('select[name="foreign_key_column"]').value;
+                    if (fkTable && fkColumn) {
+                        foreignKeys.push(`FOREIGN KEY (${name}) REFERENCES ${fkTable}(${fkColumn})`);
+                    }
+                }
             }
         });
 
         const columnsStr = columns.join(', ');
+        const foreignKeysStr = foreignKeys.join(', ');
+        const finalColumnsStr = foreignKeys.length > 0 ? `${columnsStr}, ${foreignKeysStr}` : columnsStr;
 
-        if (tableName && columnsStr) {
+        if (tableName && finalColumnsStr) {
             try {
                 const response = await fetch('/api/tables', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ tableName, columns: columnsStr }),
+                    body: JSON.stringify({ type: 'form', tableName, columns: finalColumnsStr }),
                 });
 
                 if (response.ok) {
                     addTableModal.style.display = 'none';
                     addTableForm.reset();
-                    // Reset columns to the initial state
-                    columnsContainer.innerHTML = `
-                        <div class="column-row">
-                            <div class="form-group">
-                                <label>column name</label>
-                                <input type="text" name="column_name" placeholder="id" required>
-                            </div>
-                            <div class="form-group">
-                                <label>type</label>
-                                <select name="column_type" required>
-                                    <option value="SERIAL" selected>SERIAL</option>
-                                    <option value="VARCHAR(255)">VARCHAR(255)</option>
-                                    <option value="INT">INT</option>
-                                    <option value="TEXT">TEXT</option>
-                                    <option value="DATE">DATE</option>
-                                    <option value="DATETIME">DATETIME</option>
-                                    <option value="BOOLEAN">BOOLEAN</option>
-                                    <option value="DECIMAL(10, 2)">DECIMAL(10, 2)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>default</label>
-                                <input type="text" name="column_default" placeholder="no default">
-                            </div>
-                            <div class="form-group">
-                                <label>constraints</label>
-                                <select name="column_constraints">
-                                    <option value="PRIMARY KEY" selected>PRIMARY KEY</option>
-                                    <option value="">None</option>
-                                    <option value="UNIQUE">UNIQUE</option>
-                                    <option value="NOT NULL">NOT NULL</option>
-                                </select>
-                            </div>
-                        </div>
-                    `;
+                    columnsContainer.innerHTML = '';
+                    createColumnRow();
                     await loadTables();
                     await rebuildSchemaGraph();
                 } else {
@@ -278,8 +321,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    addTableSqlForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const sql = document.getElementById('sql-create-statement').value.trim();
+        if (sql) {
+            try {
+                const response = await fetch('/api/tables', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'sql', sql }),
+                });
 
-    // Load chat history from local storage
+                if (response.ok) {
+                    addTableModal.style.display = 'none';
+                    addTableSqlForm.reset();
+                    await loadTables();
+                    await rebuildSchemaGraph();
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Failed to add table.');
+                }
+            } catch (error) {
+                console.error('Error adding table:', error);
+                alert(`Error: ${error.message}`);
+            }
+        }
+    });
+
     function loadChatHistory() {
         const chats = JSON.parse(localStorage.getItem('chats')) || {};
         historyList.innerHTML = '';
@@ -295,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const titleSpan = document.createElement('span');
             titleSpan.textContent = displayTitle;
-            titleSpan.title = chat.title; // Show full title on hover
+            titleSpan.title = chat.title;
             listItem.appendChild(titleSpan);
 
             const iconsDiv = document.createElement('div');
@@ -353,8 +421,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-
-    // Load a specific chat
     function loadChat(chatId) {
         const chats = JSON.parse(localStorage.getItem('chats')) || {};
         const chat = chats[chatId];
@@ -374,7 +440,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Save a message to the current chat
     function saveMessage(sender, message, isHtml = false, isSql = false) {
         const chats = JSON.parse(localStorage.getItem('chats')) || {};
         if (!currentChatId) {
@@ -685,14 +750,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // New Chat button event listener
     newChatBtn.addEventListener('click', () => {
         currentChatId = null;
         chatHistory.innerHTML = '';
         addMessage('bot', 'Hey! I\'m your personal SQL agent. Ask me a question about your data, and I\'ll help you build the right query to answer it.');
     });
 
-    // Initial bot message
+    printChatBtn.addEventListener('click', () => {
+        window.print();
+    });
+
     addMessage('bot', 'Hey! I\'m your personal SQL agent. Ask me a question about your data, and I\'ll help you build the right query to answer it.');
 
     window.handleConfirmation = handleConfirmation; 
@@ -704,6 +771,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    loadTables();
-    loadChatHistory();
+    (async () => {
+        await loadTables();
+        createColumnRow(); // Create the initial column row
+        loadChatHistory();
+    })();
 });

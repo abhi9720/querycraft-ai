@@ -84,6 +84,27 @@ def get_table_schema(table_name):
         if conn:
             connector.close_connection(conn)
 
+@api_bp.route("/table/<table_name>/columns", methods=["GET"])
+def get_table_columns(table_name):
+    conn = None
+    try:
+        conn = connector.get_connection()
+        cursor = conn.cursor()
+
+        # Fetch columns and their types from the database
+        cursor.execute(connector.get_table_schema_query(table_name))
+        columns_info = cursor.fetchall()
+        columns = [col[0] for col in columns_info]
+
+        return jsonify(columns)
+
+    except Exception as e:
+        logging.exception("An error occurred while fetching table columns.")
+        return jsonify({"error": "An internal server error occurred.", "description": str(e)}), 500
+    finally:
+        if conn:
+            connector.close_connection(conn)
+
 @api_bp.route("/tables", methods=["POST"])
 def create_table():
     conn = None
@@ -92,25 +113,34 @@ def create_table():
         if not data:
             return jsonify({"error": "Invalid JSON"}), 400
 
-        table_name = data.get("tableName")
-        columns = data.get("columns")
-
-        if not table_name or not columns:
-            return jsonify({"error": "Table name and columns are required"}), 400
+        create_type = data.get("type", "form")
 
         conn = connector.get_connection()
         cursor = conn.cursor()
 
-        # Check if table already exists
-        cursor.execute(connector.get_tables_query())
-        tables = [row[0] for row in cursor.fetchall()]
-        if table_name in tables:
-            return jsonify({"error": f"Table '{table_name}' already exists"}), 409
+        if create_type == "sql":
+            sql_query = data.get("sql")
+            if not sql_query:
+                return jsonify({"error": "SQL query is required"}), 400
+            cursor.execute(sql_query)
+        else:
+            table_name = data.get("tableName")
+            columns = data.get("columns")
 
-        cursor.execute(connector.create_table(table_name, columns))
+            if not table_name or not columns:
+                return jsonify({"error": "Table name and columns are required"}), 400
+
+            # Check if table already exists
+            cursor.execute(connector.get_tables_query())
+            tables = [row[0] for row in cursor.fetchall()]
+            if table_name in tables:
+                return jsonify({"error": f"Table '{table_name}' already exists"}), 409
+
+            cursor.execute(connector.create_table(table_name, columns))
+        
         conn.commit()
 
-        return jsonify({"message": f"Table {table_name} created successfully"})
+        return jsonify({"message": "Table created successfully"})
     except Exception as e:
         logging.exception("An error occurred while creating the table.")
         return jsonify({"error": "An internal server error occurred.", "description": str(e)}), 500

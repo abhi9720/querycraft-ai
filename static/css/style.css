@@ -44,10 +44,6 @@ body {
     margin-bottom: 20px;
 }
 
-#new-chat-btn:hover, #add-table-btn:hover {
-    background-color: #f7b733;
-}
-
 .sidebar h3 {
     color: #a0a0e0;
     font-size: 14px;
@@ -75,10 +71,6 @@ body {
     text-overflow: ellipsis;
 }
 
-.sidebar ul li:hover {
-    color: #f6d365;
-}
-
 .history-icons {
     display: none;
     align-items: center;
@@ -94,30 +86,16 @@ body {
     color: #a0a0e0;
 }
 
-.history-icons i:hover, .delete-table-icon:hover {
-    color: #f6d365;
-}
-
-
-.preview-icon {
-    margin-left: 10px;
-    cursor: pointer;
-    color: #a0a0e0;
-}
-
-.preview-icon:hover {
-    color: #f6d365;
-}
-
 .chat-container {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    min-width: 0; /* Prevents overflow from pushing out other flex items */
+    min-width: 0;
 }
 
 .chat-header {
     display: flex;
+    justify-content: space-between;
     align-items: center;
     gap: 15px;
     padding: 20px;
@@ -151,12 +129,14 @@ body {
     font-weight: bold;
 }
 
-.actions {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    font-size: 20px;
-    color: #a0a0e0;
+#print-chat-btn {
+    background-color: #3a3a5e;
+    color: #f6d365;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
 }
 
 .chat-history {
@@ -214,10 +194,6 @@ body {
     font-size: 13px;
 }
 
-.copy-sql-btn:hover {
-    background-color: #4a4a6e;
-}
-
 .message.user .content {
     background-color: #f6d365;
     color: #1a1a2e;
@@ -247,27 +223,7 @@ body {
     outline: none;
 }
 
-#send-btn {
-    background-color: transparent;
-    border: none;
-    color: #f6d365;
-    font-size: 20px;
-    cursor: pointer;
-    padding: 5px;
-}
-
-#send-btn:hover {
-    color: #f7b733;
-}
-
-.confirmation-container {
-    background-color: #2a2a4e;
-    border-radius: 15px;
-    padding: 15px;
-    margin-top: 10px;
-}
-
-.table-selector {
+.confirmation-container, .table-selector {
     background-color: #1e1e3f;
     border-radius: 10px;
     padding: 10px;
@@ -291,8 +247,7 @@ body {
     margin-bottom: 10px;
 }
 
-.table-list,
-.suggestions-list {
+.table-list, .suggestions-list {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -317,10 +272,6 @@ body {
     font-size: 14px;
 }
 
-.suggestions-list li:hover {
-    background-color: #3a3a5e;
-}
-
 .looks-good-btn {
     background-color: #f6d365;
     color: #1a1a2e;
@@ -332,11 +283,6 @@ body {
     cursor: pointer;
     margin-top: 10px;
     width: 100%;
-}
-
-.looks-good-btn:disabled {
-    background-color: #a0a0e0;
-    cursor: not-allowed;
 }
 
 .confirmation-container.disabled .table-selector {
@@ -377,13 +323,6 @@ body {
     font-weight: bold;
 }
 
-.close-btn:hover,
-.close-btn:focus {
-    color: #f6d365;
-    text-decoration: none;
-    cursor: pointer;
-}
-
 #modal-table-name, #add-table-modal h3 {
     color: #e0e0e0;
     font-size: 24px;
@@ -392,11 +331,39 @@ body {
     font-weight: 500;
 }
 
-#add-table-form .form-group {
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.tab-link {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #1e1e3f;
+    border: 1px solid #3a3a5e;
+    color: #a0a0e0;
+    border-radius: 8px 8px 0 0;
+}
+
+.tab-link.active {
+    background-color: #3a3a5e;
+    color: #fff;
+    border-bottom: 1px solid #3a3a5e;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+#add-table-form .form-group, #add-table-sql-form .form-group {
     margin-bottom: 15px;
 }
 
-#add-table-form label {
+#add-table-form label, #add-table-sql-form label {
     font-size: 12px;
     color: #a0a0e0;
     text-transform: uppercase;
@@ -404,7 +371,7 @@ body {
     margin-bottom: 5px;
 }
 
-#add-table-form input, #add-table-form select {
+#add-table-form input, #add-table-form select, #sql-create-statement {
     background-color: #1e1e3f;
     border: 1px solid #3a3a5e;
     border-radius: 8px;
@@ -412,26 +379,18 @@ body {
     padding: 12px;
     font-size: 15px;
     width: 100%;
-}
-
-#add-table-form select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23e0e0e0%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22/%3E%3C/svg%3E');
-    background-repeat: no-repeat, repeat;
-    background-position: right .7em top 50%, 0 0;
-    background-size: .65em auto, 100%;
+    box-sizing: border-box;
 }
 
 #columns-container .column-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     margin-bottom: 10px;
 }
 
-#columns-container .form-group {
-    flex-grow: 1;
+.foreign-key-details {
+    display: contents;
 }
 
 #add-column-btn {
@@ -443,10 +402,6 @@ body {
     font-size: 14px;
     cursor: pointer;
     margin-bottom: 20px;
-}
-
-#add-column-btn:hover {
-    background-color: #4a4a6e;
 }
 
 .form-actions {
@@ -470,17 +425,9 @@ body {
     color: #a0a0e0;
 }
 
-.form-actions .cancel-btn:hover {
-    background-color: #4a4a6e;
-}
-
 .form-actions button[type="submit"] {
     background-color: #a062d3;
     color: #fff;
-}
-
-.form-actions button[type="submit"]:hover {
-    background-color: #8a4acb;
 }
 
 #modal-columns-list {
@@ -489,31 +436,16 @@ body {
     margin-bottom: 20px;
 }
 
-#modal-columns-list li {
-    padding: 5px 0;
-    font-size: 16px;
-}
-
-#modal-sample-data {
-    overflow-x: auto;
-}
-
 #modal-sample-data table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
 }
 
-#modal-sample-data th,
-#modal-sample-data td {
+#modal-sample-data th, #modal-sample-data td {
     border: 1px solid #2a2a4e;
     padding: 8px;
     text-align: left;
-}
-
-#modal-sample-data th {
-    background-color: #2a2a4e;
-    color: #a0a0e0;
 }
 
 .typing-indicator .content {
@@ -535,19 +467,55 @@ body {
     animation: typing-bounce 1.4s infinite;
 }
 
-.typing-dots div:nth-child(2) {
-    animation-delay: -0.2s;
-}
-
-.typing-dots div:nth-child(3) {
-    animation-delay: -0.4s;
-}
-
 @keyframes typing-bounce {
     0%, 80%, 100% {
         transform: scale(0);
     }
     40% {
         transform: scale(1.0);
+    }
+}
+
+@media print {
+    body {
+        background-color: #fff;
+    }
+
+    .sidebar, .chat-input-container, .chat-header, .modal, .copy-sql-btn {
+        display: none !important;
+    }
+
+    .container, .chat-container, .chat-history {
+        display: block !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        background-color: #fff !important;
+        box-shadow: none !important;
+    }
+
+    .message {
+        max-width: 100%;
+        page-break-inside: avoid;
+        color: #000;
+    }
+
+    .message .avatar {
+        display: none;
+    }
+
+    .message .content {
+        background-color: #f0f0f0;
+        color: #000;
+        border: 1px solid #ddd;
+    }
+
+    .message.user .content {
+        background-color: #e6f7ff;
+    }
+
+    .message .content pre {
+        background-color: #ddd;
+        border: 1px solid #ccc;
     }
 }

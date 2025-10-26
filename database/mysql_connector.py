@@ -1,25 +1,23 @@
 import mysql.connector
 import os
-from urllib.parse import urlparse
 
 class MySqlConnector:
     def __init__(self, db_name):
-        db_url = os.getenv("DATABASE_URL")
-        if not db_url:
-            raise ValueError("DATABASE_URL environment variable not set")
+        user = os.getenv("DB_USER")
+        password = os.getenv("DB_PASSWORD")
+        host = os.getenv("DB_HOST")
+        port = os.getenv("DB_PORT")
+        database = db_name or os.getenv("DB_NAME")
 
-        parsed_url = urlparse(db_url)
-        
-        # Fallback to the path from the URL if db_name is not provided
-        if not db_name and parsed_url.path:
-            db_name = parsed_url.path.lstrip('/')
+        if not all([user, password, host, port, database]):
+            raise ValueError("Database connection environment variables not set")
 
         self.config = {
-            'user': parsed_url.username,
-            'password': parsed_url.password,
-            'host': parsed_url.hostname,
-            'port': parsed_url.port,
-            'database': db_name,
+            'user': user,
+            'password': password,
+            'host': host,
+            'port': int(port),
+            'database': database,
             'raise_on_warnings': True
         }
 
